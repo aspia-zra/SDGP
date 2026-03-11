@@ -92,15 +92,22 @@ class admindashboard(ctk.CTkFrame):
         self.leaseDetails.grid(row=1, column=0, sticky="ew")
         self.leaseDetails.grid_remove()        
 
-        for lease in leases:
-            endDate = lease[0]
-            fullName = lease[1]
+        if leases:
+            for lease in leases:
+                endDate = lease[0]
+                fullName = lease[1]
 
+                label = ctk.CTkLabel(
+                    self.leaseDetails,
+                    text=f"{fullName} | Lease Expiry: {endDate}"
+                )
+                label.pack(anchor="w", padx=10)
+        else:
             label = ctk.CTkLabel(
                 self.leaseDetails,
-                text=f"{fullName} | Lease Expiry: {endDate}"
+                text="No Expiring Leases."
             )
-            label.pack(anchor="w", padx=10)
+            label.pack(anchor="w", padx=10) 
 
         # Overdue Invoices
         OverdueFrame = Frame(dropdownsFrame)
@@ -120,14 +127,21 @@ class admindashboard(ctk.CTkFrame):
         self.overdueDetails.grid(row=1, column=0, sticky="ew")
         self.overdueDetails.grid_remove()        
 
-        for item in overdues:
-            amount = item[0]
-            dueDate = item[1]
-            fullName = item[2]
+        if overdues:
+            for item in overdues:
+                amount = item[0]
+                dueDate = item[1]
+                fullName = item[2]
 
+                label = ctk.CTkLabel(
+                    self.overdueDetails,
+                    text=f"{fullName} | £{amount} Due: {dueDate}"
+                )
+                label.pack(anchor="w", padx=10)
+        else:
             label = ctk.CTkLabel(
                 self.overdueDetails,
-                text=f"{fullName} | £{amount} Due: {dueDate}"
+                text="No Overdue Payments."
             )
             label.pack(anchor="w", padx=10)
         
@@ -149,14 +163,21 @@ class admindashboard(ctk.CTkFrame):
         self.repairDetails.grid(row=1, column=0, sticky="ew")
         self.repairDetails.grid_remove()        
 
-        for repair in repairs:
-            severity = repair[0]
-            cost = repair[1]
-            fullName = repair[2]
+        if repairs:
+            for repair in repairs:
+                severity = repair[0]
+                cost = repair[1]
+                fullName = repair[2]
 
+                label = ctk.CTkLabel(
+                    self.repairDetails,
+                    text=f"{fullName} | £{cost} Severity: {severity}"
+                )
+                label.pack(anchor="w", padx=10)
+        else:
             label = ctk.CTkLabel(
                 self.repairDetails,
-                text=f"{fullName} | £{cost} Severity: {severity}"
+                text="No Repairs."
             )
             label.pack(anchor="w", padx=10)
 
