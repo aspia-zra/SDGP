@@ -59,7 +59,7 @@ def dropdownBoxes():
     cursor.execute("""SELECT i.Amount, i.dueDate, u.fullName
         FROM Invoice i
         JOIN LeaseAgreement l ON i.leaseID = l.leaseID
-        Join tenant t ON l.tenantID = t.tenantID
+        Join Tenant t ON l.tenantID = t.tenantID
         Join UserTbl u ON t.userID = u.userID
         JOIN Apartment a ON l.apartmentID = a.apartmentID
         WHERE i.dueDate <= CURDATE() AND i.Status = 'overdue' 
@@ -71,7 +71,7 @@ def dropdownBoxes():
     # High Priority Repairs
     cursor.execute("""SELECT c.Severity, c.Description, u.fullName
         FROM Complaint c
-        Join tenant t ON c.tenantID = t.tenantID
+        Join Tenant t ON c.tenantID = t.tenantID
         Join UserTbl u ON t.userID = u.userID
         JOIN Apartment a ON c.apartmentID = a.apartmentID           
         WHERE c.Status = 'open' AND a.locationID=%s
