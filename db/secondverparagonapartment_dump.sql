@@ -179,15 +179,15 @@ DROP TABLE IF EXISTS `MaintenanceLog`;
 CREATE TABLE `MaintenanceLog` (
   `logID` int NOT NULL AUTO_INCREMENT,
   `apartmentID` int NOT NULL,
-  `complaintID` int DEFAULT NULL,
+  `userID` int NOT NULL,
   `maintenanceDate` datetime DEFAULT CURRENT_TIMESTAMP,
   `timeTaken` int DEFAULT NULL,
   `Cost` decimal(10,2) DEFAULT NULL,
   `Notes` text,
   PRIMARY KEY (`logID`),
   KEY `idx_maintenance_apartment` (`apartmentID`),
-  KEY `fk_maintenancelog_complaint` (`complaintID`),
-  CONSTRAINT `fk_maintenancelog_complaint` FOREIGN KEY (`complaintID`) REFERENCES `Complaint` (`complaintID`) ON DELETE CASCADE ON UPDATE CASCADE,
+  KEY `fk_maintenancelog_userID` (`userID`),
+  CONSTRAINT `fk_maintenancelog_userID` FOREIGN KEY (`userID`) REFERENCES `UserTbl` (`userID`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `maintenancelog_ibfk_1` FOREIGN KEY (`apartmentID`) REFERENCES `Apartment` (`apartmentID`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -198,7 +198,7 @@ CREATE TABLE `MaintenanceLog` (
 
 LOCK TABLES `MaintenanceLog` WRITE;
 /*!40000 ALTER TABLE `MaintenanceLog` DISABLE KEYS */;
-INSERT INTO `MaintenanceLog` VALUES (1,1,1,'2025-12-11 11:00:00',120,150.00,'Boiler repair'),(2,2,2,'2026-01-13 10:30:00',90,120.00,'Pipe replacement'),(3,3,3,'2026-02-06 13:00:00',60,80.00,'Temporary window fix'),(4,6,5,'2026-01-23 12:00:00',45,60.00,'Extractor fan replaced');
+INSERT INTO `MaintenanceLog` VALUES (1,1,5,'2025-12-11 11:00:00',120,150.00,'Boiler repair'),(2,2,5,'2026-01-13 10:30:00',90,120.00,'Pipe replacement'),(3,3,7,'2026-02-06 13:00:00',60,80.00,'Temporary window fix'),(4,6,7,'2026-01-23 12:00:00',45,60.00,'Extractor fan replaced');
 /*!40000 ALTER TABLE `MaintenanceLog` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -304,4 +304,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-03-11 21:44:24
+-- Dump completed on 2026-03-12 13:11:14
