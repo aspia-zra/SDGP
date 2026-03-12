@@ -69,11 +69,10 @@ def dropdownBoxes():
     overdues = cursor.fetchall()
 
     # High Priority Repairs
-    cursor.execute("""SELECT c.Severity, m.Cost, u.fullName
+    cursor.execute("""SELECT c.Severity, c.Description, u.fullName
         FROM Complaint c
         Join tenant t ON c.tenantID = t.tenantID
         Join UserTbl u ON t.userID = u.userID
-        Join MaintenanceLog m ON c.complaintID = m.complaintID
         JOIN Apartment a ON c.apartmentID = a.apartmentID           
         WHERE c.Status = 'open' AND a.locationID=%s
         ORDER BY c.Severity DESC
@@ -107,4 +106,3 @@ def graph():
         graphs.append((item[1], item[0]))
 
     return graphs
-
