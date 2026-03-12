@@ -166,12 +166,12 @@ class admindashboard(ctk.CTkFrame):
         if repairs:
             for repair in repairs:
                 severity = repair[0]
-                cost = repair[1]
+                Description = repair[1]
                 fullName = repair[2]
 
                 label = ctk.CTkLabel(
                     self.repairDetails,
-                    text=f"{fullName} | £{cost} Severity: {severity}"
+                    text=f"{fullName} | {Description}\nSeverity: {severity}"
                 )
                 label.pack(anchor="w", padx=10)
         else:
