@@ -105,4 +105,7 @@ def graph():
     for item in profitloss:
         graphs.append((item[1], item[0]))
 
+    cursor.close()
+    conn.close()
+
     return graphs
