@@ -23,11 +23,15 @@ Incomplete dashboards and status:
 
 
 ## What's left:
-TESTING:
+- TESTING:
 (manual and automated test plans)
-REPORT: (scope, eval and diagrams, adding use case methods and diagram descriptions)
-SLIDES: (will do thursday together)
-INDIVIDUAL ASSIGNMENTS (azra complete)
-ADD CVs
+- REPORT: (scope, eval and diagrams, adding use case methods and diagram descriptions)
+- SLIDES: (will do thursday together)
+- INDIVIDUAL ASSIGNMENTS (azra complete)
+- ADD CVs
+
+ ## TO REVIEW
+ - sustainability
+ - has our work met the requirements
 
 
