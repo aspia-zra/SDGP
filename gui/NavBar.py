@@ -3,95 +3,75 @@ import matplotlib
 import customtkinter as ctk
 from . import Admindash, settings
 from Models.logincode import UserTbl
-
-#Themes- work on font
-BG_COLOR = "#f5f3ff"
-SIDEBAR_COLOR = "#ede9fe"
-CARD_COLOR = "#ffffff"
-ACCENT_COLOR = "#7c3aed"
-SUB_ACCENT = "#a78bfa"
-TEXT_COLOR = "#1f1f1f"
-ENTRY_BG = "#f3e8ff"
-
-FONT_TITLE = ("Segoe UI", 18, "bold")
-FONT_HEADER = ("Segoe UI", 14, "bold")
-FONT_LABEL = ("Segoe UI", 11)
-FONT_ENTRY = ("Segoe UI", 11)
-FONT_BTN = ("Segoe UI", 11, "bold")
+import theme
 
 class navbar(ctk.CTkFrame):
     def __init__(self, parent, controller):
-        super().__init__(parent)
-
+        super().__init__(parent, fg_color=theme.SECONDARY)
         self.controller = controller
 
         self.grid(row=0, column=0, sticky="ns")
+        self.grid_rowconfigure(0, weight=1)
+        self.grid_columnconfigure(0, weight=1)
 
         self.create_navbar()
         
     def create_navbar(self):
-        self.navbar = ctk.CTkFrame(self, width=200)
+        self.navbar = ctk.CTkFrame(self, fg_color="transparent")
         self.navbar.grid(row=0, column=0, sticky="ns")
+        self.navbar.grid_rowconfigure(7, weight=1)
         self.navbar.grid_columnconfigure(0, weight=1)
 
-        #nav bar 
+        #TITLE
         navtitle_label = ctk.CTkLabel(
             self.navbar, 
             text="Paragon Apartments", 
-            font=("Arial", 24))
-        navtitle_label.grid(row = 0, column = 0, columnspan = 2, padx = 20, pady = 20,)
+            fg_color= "transparent",
+            text_color=theme.PRIMARY,
+            font=(theme.TITLE_FONT, 20))
+        navtitle_label.grid(row = 0, column = 0, padx = 20, pady = (20,40), sticky="w")
 
-        dashboard = ctk.CTkButton(
-            self.navbar, 
-            fg_color="#202e75", 
-            hover_color="#0f0f30",
+        btnConfig = { # Styling for buttons here
+            "fg_color": theme.PRIMARY,
+            "hover_color": theme.PRIMARY_DARK,
+            "text_color": theme.SURFACE,
+            "height": 40,
+            "corner_radius": 8,
+            "anchor": "w",
+        }
+
+        dashboard = ctk.CTkButton(self.navbar,
             command = self.open_admindash,
-            text="Dashboard")
-        dashboard.grid(row = 1, column = 0, columnspan = 1, padx = 20, pady = 20, sticky = "ew")
+            text="Dashboard", **btnConfig)
+        dashboard.grid(row = 1, column = 0, padx = 20, pady = 20, sticky = "ew")
 
-        notif = ctk.CTkButton(
-            self.navbar, 
-            fg_color="#202e75", 
-            hover_color="#0f0f30",
-            text="Notifications")
-        notif.grid(row = 2, column = 0, columnspan = 1, padx = 20, pady = 20, sticky = "ew")
+        notif = ctk.CTkButton(self.navbar, 
+            text="Notifications", **btnConfig)
+        notif.grid(row = 2, column = 0, padx = 20, pady = 20, sticky = "ew")
 
-        settings = ctk.CTkButton(
-            self.navbar, 
-            fg_color="#202e75", 
-            hover_color="#0f0f30", 
+        payments = ctk.CTkButton(self.navbar, 
+            text="Payments", **btnConfig)
+        payments.grid(row = 4, column = 0, padx = 20, pady = 20, sticky = "ew")
+
+        complaints = ctk.CTkButton(self.navbar, 
+            text="Complaints", **btnConfig)
+        complaints.grid(row = 5, column = 0, padx = 20, pady = 20, sticky = "ew")
+
+        repairs = ctk.CTkButton(self.navbar, 
+            text="Repairs", **btnConfig)
+        repairs.grid(row = 6, column = 0, padx = 20, pady = 20, sticky = "ew")
+
+        settings = ctk.CTkButton(self.navbar, 
             command = self.open_settings,
-            text="Settings")
-        settings.grid(row = 3, column = 0, columnspan = 1, padx = 20, pady = 20, sticky = "ew")
+            text="Settings", **btnConfig)
+        settings.grid(row = 3, column = 0, padx = 20, pady = 20, sticky = "ew")
 
-        payments = ctk.CTkButton(
-            self.navbar, 
-            fg_color="#202e75", 
-            hover_color="#0f0f30", 
-            text="Payments")
-        payments.grid(row = 4, column = 0, columnspan = 1, padx = 20, pady = 20, sticky = "ew")
-
-        complaints = ctk.CTkButton(
-            self.navbar, 
-            fg_color="#202e75", 
-            hover_color="#0f0f30", 
-            text="Complaints")
-        complaints.grid(row = 5, column = 0, columnspan = 1, padx = 20, pady = 20, sticky = "ew")
-
-        repairs = ctk.CTkButton(
-            self.navbar, 
-            fg_color="#202e75", 
-            hover_color="#0f0f30", 
-            text="Repairs")
-        repairs.grid(row = 6, column = 0, columnspan = 1, padx = 20, pady = 20, sticky = "ew")
-
-        logout = ctk.CTkButton(
-            self.navbar, 
-            fg_color="#202e75", 
-            hover_color="#7a070d", 
+        logout = ctk.CTkButton(self.navbar, 
+            fg_color=theme.PRIMARY, 
+            hover_color=theme.DANGER, 
             text="Logout", 
             command = self.logoutbtn)
-        logout.grid(row = 8, column = 0, columnspan = 1, padx = 20, pady = 20, sticky = "ew")
+        logout.grid(row = 8, column = 0, padx = 20, pady = 20, sticky = "s")
     
     def open_admindash(self):
         self.controller.clear_page()
