@@ -1,241 +1,293 @@
-from tkinter import *
 import customtkinter as ctk
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from tkinter import ttk
 import matplotlib.pyplot as plt
-from tkinter.ttk import Progressbar
+import plotly.graph_objects as go
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+import theme
+from datetime import datetime
 from . import NavBar
-from Models.admindashBE import progressbarCalc, dropdownBoxes, graph
+from Models.admindashBE2 import adminBE
+
 
 class admindashboard(ctk.CTkFrame):
-    def __init__(self, main):
-        super().__init__(main)
-        self.main = main
 
-        self.grid(row=0, column=0, sticky="nsew") 
+    def __init__(self, parent):
+        super().__init__(parent, fg_color=theme.BACKGROUND)
+
+        self.grid_columnconfigure(0, weight=0)
         self.grid_columnconfigure(1, weight=1)
-        self.grid_rowconfigure(0, weight=1)
+        self.grid_rowconfigure(1, weight=1)
 
-        self.nav = NavBar.navbar(self, self.main)
-        self.nav.grid(row=0, column=0, sticky="ns")
+        self.nav = NavBar.navbar(self, parent)
+        self.nav.grid(row=0, rowspan=2, column=0, sticky="ns")
 
-        self.admindash()
+        self._create_header()
+        self._create_scrollFrameable_area()
 
-    def admindash(self):
-        self.dashboardFrame = Frame(self)
-        self.dashboardFrame.grid(row=0, column=1, sticky="nsew", padx=20, pady=20)
-        self.dashboardFrame.grid_columnconfigure(0, weight=2)
-        self.dashboardFrame.grid_columnconfigure(1, weight=1)
-        self.dashboardFrame.grid_rowconfigure(0, weight=1)
+    def _create_header(self):
+        header = ctk.CTkFrame(self, fg_color=theme.TITLE, height=80, corner_radius=0)
+        header.grid(row=0, column=1, sticky="ew", pady=(0,20))
+        header.grid_columnconfigure(0, weight=1)
+        header.grid_columnconfigure(1, weight=0)
+        ctk.CTkLabel(header, text="Admin View", font=theme.TITLE_FONT,
+                    text_color=theme.PRIMARY).grid(row=0, column=0, pady=20, padx=30, sticky="w")
+        refresh_btn = ctk.CTkButton(header, text="↻ Refresh",
+            fg_color=theme.PRIMARY, hover_color=theme.PRIMARY_DARK, text_color="white", 
+            width=100, corner_radius=8, command= self.refresh)
+        refresh_btn.grid(row=0, column=1, pady=20, padx=30, sticky="e")
 
-    # Progress Bars
-        progressFrame = Frame(self.dashboardFrame)
-        progressFrame.grid(row = 0, column = 0, pady = 20)
-        aptPercent, invoicePercent, compPercent = progressbarCalc()
+    def _create_scrollFrameable_area(self):
 
-        apartments = Label(progressFrame, text="Apartments Occupied")
-        apartments.grid(row = 0, column = 0,pady = 20)
+        self.scrollFrame = ctk.CTkScrollableFrame(self, fg_color=theme.BACKGROUND,
+                                    scrollbar_button_color=theme.PRIMARY,
+                                    scrollbar_button_hover_color=theme.PRIMARY_DARK)
+        self.scrollFrame.grid(row=1, column=1, padx=20, pady=10, sticky="nsew")
+        self.scrollFrame.grid_columnconfigure(0, weight=1)
 
-        aptProgress = Progressbar(progressFrame, orient=HORIZONTAL, length=200, mode='determinate')
-        aptProgress['value'] = aptPercent
-        aptProgress.grid(row = 1, column = 0,pady = 20)
+        self.manageStaffCard()
+        self.manageAptCard()
+        self.graphsCard()
+        self.quickActionsCard()
 
-        rentCollected = Label(progressFrame, text="Rent Collected")
-        rentCollected.grid(row = 2, column = 0,pady = 20)
+    def manageStaffCard(self):
 
-        rentProgress = Progressbar(progressFrame, orient=HORIZONTAL, length=200, mode='determinate')
-        rentProgress['value'] = invoicePercent
-        rentProgress.grid(row = 3, column = 0,pady = 20)
-
-        repairsMade = Label(progressFrame, text="Complaints Resolved")
-        repairsMade.grid(row = 4, column = 0,pady = 20)
-
-        repairsProgress = Progressbar(progressFrame, orient=HORIZONTAL, length=200, mode='determinate')
-        repairsProgress['value'] = compPercent
-        repairsProgress.grid(row = 5, column = 0,pady = 20)
-
-    # Quick actions
-        quickActionsFrame = Frame(self.dashboardFrame)
-        quickActionsFrame.grid(row= 1, column=0, padx=20, pady=20)
-        
-        quickActions = Label(quickActionsFrame, text="Quick Actions", font=("Arial", 18))
-        quickActions.grid(row=0, column=0, columnspan=3, pady=20)
-
-        addAptButton = Button(quickActionsFrame, text="Add Apartment", width=10)
-        addAptButton.grid(row=1, column=0, padx=10)
-
-        createLeaseButton = Button(quickActionsFrame, text="Create Lease", width=10)
-        createLeaseButton.grid(row=1, column=1, padx=10)
-
-        generalReportButton = Button(quickActionsFrame, text="General Report", width=10)
-        generalReportButton.grid(row=1, column=2, padx=10)
-
-    # Dropdowns
-        dropdownsFrame = Frame(self.dashboardFrame)
-        dropdownsFrame.grid(row=0, column=1, padx=20, pady=20)
-        leases, overdues, repairs = dropdownBoxes()
-
-        # Expiring Leases
-        leasesFrame = Frame(dropdownsFrame)
-        leasesFrame.grid(row=0, column=0, pady = 20)
-
-        self.leaseExpiring = False
-        self.leasesBtn = ctk.CTkButton(
-            leasesFrame,
-            text="Leases Expiring ▼",
-            font=("Arial", 14),
-            fg_color= '#9C2007',
-            command=self.leasesDrop
+        card = ctk.CTkFrame(
+            self.scrollFrame,
+            fg_color = theme.SURFACE,
+            corner_radius = 12
         )
-        self.leasesBtn.grid(row=0, column=0, padx=10, sticky="ew")
+        card.grid(row=0, column=0, sticky="ew", pady=10)
 
-        self.leaseDetails = ctk.CTkFrame(leasesFrame)
-        self.leaseDetails.grid(row=1, column=0, sticky="ew")
-        self.leaseDetails.grid_remove()        
+        ctk.CTkLabel(
+            card,
+            text="Staff Management",
+            font = theme.HEADING_FONT,
+            text_color = theme.PRIMARY
+        ).pack(anchor="w", padx=15, pady=(15, 5))
 
-        if leases:
-            for lease in leases:
-                endDate = lease[0]
-                fullName = lease[1]
+        filterFrame = ctk.CTkFrame(card, fg_color=theme.BACKGROUND)
+        filterFrame.pack(fill="x", padx=15, pady=10)
+        filterFrame.grid_columnconfigure(1, weight=1)
 
-                label = ctk.CTkLabel(
-                    self.leaseDetails,
-                    text=f"{fullName} | Lease Expiry: {endDate}"
-                )
-                label.pack(anchor="w", padx=10)
-        else:
-            label = ctk.CTkLabel(
-                self.leaseDetails,
-                text="No Expiring Leases."
-            )
-            label.pack(anchor="w", padx=10) 
+        ctk.CTkEntry( # Will only work by name
+            filterFrame, 
+            placeholder_text = "Search Staff..."
+        ).grid(row=0, column=0, padx=5, pady=5)
 
-        # Overdue Invoices
-        OverdueFrame = Frame(dropdownsFrame)
-        OverdueFrame.grid(row=1, column=0, pady=10)
+        ctk.CTkButton( # Filter to roles
+            filterFrame,
+            text = "Edit",
+            fg_color= theme.PRIMARY,
+            hover_color= theme.PRIMARY_DARK
+        ).grid(row=0, column=1, padx=5, pady=5)
 
-        self.overdueRent = False
-        self.overdueBtn = ctk.CTkButton(
-            OverdueFrame,
-            text="Overdue Rent ▼",
-            font=("Arial", 14),
-            fg_color= '#9C2007',
-            command=self.overdueDrop
+        ctk.CTkButton( # Connect to hidden page (like dropdowns) reveals fill-in sections with a submit button.
+            filterFrame,
+            text = "Add Staff",
+            fg_color = theme.PRIMARY,
+            hover_color = theme.PRIMARY_DARK
+        ).grid(row=0, column=2, padx=5)
+
+        tableFrame = ctk.CTkFrame(card, fg_color="transparent")
+        tableFrame.pack(fill="both", expand=True, padx=15, pady=10)
+        tableFrame.grid_rowconfigure(0, weight=1)
+        tableFrame.grid_columnconfigure(0, weight=1)
+        tableFrame.grid_columnconfigure(1, weight=0)
+
+        # Table of staff details    - Scroll bar (revisit)
+        tableColumns = ("ID", "Full Name", "Phone", "Email", "Role", "Location")
+        staffTable = ttk.Treeview(tableFrame, columns=tableColumns, show="headings")
+
+        scrollbar = ttk.Scrollbar(tableFrame, orient="vertical", command=staffTable.yview, height=8)
+        staffTable.configure(yscrollcommand=scrollbar.set)
+
+        staffTable.grid(row=0, column=0, sticky="nsew")
+        scrollbar.grid(row=0, column=1, sticky="ns")
+
+        for column in tableColumns:
+            staffTable.heading(column, text=column)
+            staffTable.column(column, anchor="center", width=120)
+
+        staffData = adminBE.getStaffData()
+
+        for staff in staffData:
+            staffTable.insert("", "end", values=staff)
+
+        tableFrame.update_idletasks()
+
+    def manageAptCard(self): # Will cover both the manage apt and display leases
+
+        card = ctk.CTkFrame(
+            self.scrollFrame,
+            fg_color = theme.SURFACE,
+            corner_radius = 12
         )
-        self.overdueBtn.grid(row=0, column=0, padx=10, sticky="ew")
+        card.grid(row=1, column=0, sticky="ew", pady=10)
 
-        self.overdueDetails = ctk.CTkFrame(OverdueFrame)
-        self.overdueDetails.grid(row=1, column=0, sticky="ew")
-        self.overdueDetails.grid_remove()        
+        ctk.CTkLabel(
+            card,
+            text = "Apartment Management",
+            font = theme.HEADING_FONT,
+            text_color = theme.PRIMARY
+        ).pack(anchor="w", padx=15, pady=(15, 5))
 
-        if overdues:
-            for item in overdues:
-                amount = item[0]
-                dueDate = item[1]
-                fullName = item[2]
+        filterFrame = ctk.CTkFrame(card, fg_color=theme.BACKGROUND)
+        filterFrame.pack(fill="x", padx=15, pady=10)
+        filterFrame.grid_columnconfigure(1, weight=1)
 
-                label = ctk.CTkLabel(
-                    self.overdueDetails,
-                    text=f"{fullName} | £{amount} Due: {dueDate}"
-                )
-                label.pack(anchor="w", padx=10)
-        else:
-            label = ctk.CTkLabel(
-                self.overdueDetails,
-                text="No Overdue Payments."
-            )
-            label.pack(anchor="w", padx=10)
-        
-        # High Priority Repairs
-        highPriorityFrame = Frame(dropdownsFrame)
-        highPriorityFrame.grid(row=2, column=0, pady=10)
+        ctk.CTkEntry( # Will only works for apt number
+            filterFrame,
+            placeholder_text = "Search Apartment..."
+        ).grid(row=0, column=0, padx=5)
 
-        self.highRepairs = False
-        self.highRepairBtn = ctk.CTkButton(
-            highPriorityFrame,
-            text="High Priority Repairs ▼",
-            font=("Arial", 14),
-            fg_color= '#9C2007',
-            command=self.repairsDrop
+        ctk.CTkComboBox(
+            filterFrame,
+            values = ["All Cities", "Bristol", "Cardiff", "London", "Manchester"]
+        ).grid(row=0, column=1, padx=5)
+
+        ctk.CTkComboBox(
+            filterFrame,
+            values = ["All Status", "Occupied", "Available"]
+        ).grid(row=0, column=2, padx=5)
+
+        # Same as staff details but for apartments
+        tableColumns = ("Apartment", "City", "Tenant",
+            "Lease Start", "Lease End", "Rent", "Status")
+        aptTable = ttk.Treeview(card, columns=tableColumns, show="headings", height=8)
+
+        for column in tableColumns:
+            aptTable.heading(column, text=column)
+            aptTable.column(column, anchor="center", width=120)
+        aptTable.pack(fill="both", expand=True, padx=15, pady=10)
+
+        aptData = adminBE.getAptData()
+
+        for apt in aptData:
+            aptNumber, City, Tenant, startDate, endDate, Rent, Status = apt
+            Tenant = Tenant if Tenant else "-"
+            startDate = startDate if startDate else "-"
+            endDate = endDate if endDate else "-"
+            aptTable.insert("", "end", values=(aptNumber, City, Tenant, 
+                                               startDate, endDate, Rent, Status))
+
+    def graphsCard(self):
+
+        card = ctk.CTkFrame(
+            self.scrollFrame,
+            fg_color = theme.SURFACE,
+            corner_radius = 12
         )
-        self.highRepairBtn.grid(row=0, column=0, padx=10, sticky="ew")
+        card.grid(row=2, column=0, sticky="ew", pady=10)
 
-        self.repairDetails = ctk.CTkFrame(highPriorityFrame)
-        self.repairDetails.grid(row=1, column=0, sticky="ew")
-        self.repairDetails.grid_remove()        
+        ctk.CTkLabel(
+            card,
+            text = "Payment Graphs",
+            font = theme.HEADING_FONT,
+            text_color = theme.PRIMARY
+        ).pack(anchor="w", padx=15, pady=(15, 5))
 
-        if repairs:
-            for repair in repairs:
-                severity = repair[0]
-                Description = repair[1]
-                fullName = repair[2]
+        aptList = adminBE.getAptList()
+        aptDrop = {f"Apt {apt[0]}": apt[0] for apt in aptList}
 
-                label = ctk.CTkLabel(
-                    self.repairDetails,
-                    text=f"{fullName} | {Description}\nSeverity: {severity}"
-                )
-                label.pack(anchor="w", padx=10)
-        else:
-            label = ctk.CTkLabel(
-                self.repairDetails,
-                text="No Repairs."
-            )
-            label.pack(anchor="w", padx=10)
+        dropdown = ["Select"] + list(aptDrop.keys())
+        self.aptSelect = ctk.CTkComboBox( 
+            card,
+            values = dropdown, # Track which selected
+            command=self.selectedApt
+        ) 
+        self.aptSelect.pack(padx=15, pady=10, anchor="w")
 
-    # Graphs
-        graphFrame = Frame(self.dashboardFrame)
-        graphFrame.grid(row=1, column=1, padx=20, pady=20)
+        # Plot my bar chart
+        self.fig, self.ax = plt.subplots(figsize=(8, 4))
+        self.canvas = FigureCanvasTkAgg(self.fig, master=card)
+        self.canvas.get_tk_widget().pack(padx=15, pady=10)
 
-        graphsFrame = Frame(graphFrame)
-        graphsFrame.grid(row=1, column=0, pady=10)
+    def quickActionsCard(self):
 
-        graphs = Label(graphsFrame, text="Graphs", font=("Arial", 18))
-        graphs.grid(row=0, column=0, pady=20)
+        card = ctk.CTkFrame(
+            self.scrollFrame,
+            fg_color = theme.SURFACE,
+            corner_radius = 12
+        )
+        card.grid(row=3, column=0, sticky="ew", pady=10)
 
-        items = graph()
-        months =[]
-        profits =[]
+        ctk.CTkLabel(
+            card,
+            text = "Quick Actions",
+            font = theme.HEADING_FONT,
+            text_color = theme.PRIMARY
+        ).pack(anchor="w", padx=15, pady=(15, 10))
 
-        for month, profit in items:
-            months.append(month)
-            profits.append(profit)
+        btnFrame = ctk.CTkFrame(card, fg_color="transparent")
+        btnFrame.pack(padx=15, pady=10)
 
-        fig, ax = plt.subplots(figsize=(5,2))
-        ax.plot(months, profits)
-        ax.set_title("Profit Trajectory")
-        ax.set_xlabel("Year-Month")
-        ax.set_ylabel("Profit")
+        ctk.CTkButton(
+            btnFrame,
+            text = "Add Apartment",
+            fg_color = theme.PRIMARY
+        ).grid(row=0, column=0, padx=10)
 
-        canvas = FigureCanvasTkAgg(fig, master=graphsFrame)
-        canvas.draw()
-        canvas.get_tk_widget().grid(row=1, column=0)
+        ctk.CTkButton(
+            btnFrame,
+            text = "Create Lease",
+            fg_color = theme.PRIMARY
+        ).grid(row=0, column=1, padx=10)
+
+        ctk.CTkButton(
+            btnFrame,
+            text = "Generate Report",
+            fg_color = theme.PRIMARY
+        ).grid(row=0, column=2, padx=10)
+
+    def refresh(self):
+        for widget in self.scrollFrame.winfo_children():
+            widget.destroy()
+
+        self.manageStaffCard()
+        self.manageAptCard()
+        self.graphsCard()
+        self.quickActionsCard()
+
+        print("Dashboard refreshed at:", datetime.now().strftime("%H:%M:%S"))
+
+    def selectedApt(self, apt):
+        self.ax.clear()
+        if apt == "Select": 
+            self.ax.text(0.5, 0.5, "Select an Apartment", 
+                    ha='center', va='center', transform=self.ax.transAxes)
+            self.canvas.draw()
+            return
+            
+        actual_apt = apt.replace("Apt ", "")
+        tenantData, neighbour1, neighbour2 = adminBE.tenantGraphs(actual_apt)
+
+        if not tenantData:
+            self.ax.text(0.5, 0.5, "No payment data available for this apartment", 
+                    ha='center', va='center', transform=self.ax.transAxes)
+            self.canvas.draw()
+            return
+
+        month = sorted(list({d[1] for d in tenantData}))
+        x = range(len(month))
+
+        fullName = tenantData[0][0]
+        tenant_paid = [sum(d[2] for d in tenantData if d[1]==m) for m in month]
+        self.ax.bar([i - 0.25 for i in x], tenant_paid, width=0.25, label=fullName)
+
+        if neighbour1:
+            NfullName = neighbour1[0][0]
+            n1Paid = [sum(d[2] for d in neighbour1 if d[1]==m) for m in month]
+            self.ax.bar(x, n1Paid, width=0.25, label=NfullName)
         
+        if neighbour2:
+            N2fullName = neighbour2[0][0]
+            n2Paid = [sum(d[2] for d in neighbour2 if d[1]==m) for m in month]
+            self.ax.bar([i + 0.25 for i in x], n2Paid, width=0.25, label=N2fullName)
 
-    def leasesDrop(self):
-        if self.leaseExpiring:
-            self.leasesBtn.configure(text="Leases Expiring ▲")
-            self.leaseDetails.grid_remove()
-            self.leaseExpiring = False
-        else:
-            self.leasesBtn.configure(text="Leases Expiring ▼")
-            self.leaseDetails.grid()
-            self.leaseExpiring = True
-
-    def overdueDrop(self):
-        if self.overdueRent:
-            self.overdueBtn.configure(text="Overdue Rent ▲")
-            self.overdueDetails.grid_remove()
-            self.overdueRent = False
-        else:
-            self.overdueBtn.configure(text="Overdue Rent ▼")
-            self.overdueDetails.grid()
-            self.overdueRent = True
-    
-    def repairsDrop(self):
-        if self.highRepairs:
-            self.highRepairBtn.configure(text="High Priority Repairs ▲")
-            self.repairDetails.grid_remove()
-            self.highRepairs = False
-        else:
-            self.highRepairBtn.configure(text="High Priority Repairs ▼")
-            self.repairDetails.grid()
-            self.highRepairs = True
+        self.ax.set_xticks(x)
+        self.ax.set_xticklabels(month, rotation=45)
+        self.ax.set_ylabel("Total Payments")
+        self.ax.set_title("Tenant Payments vs Neighbor/s")
+        self.ax.legend()
+        self.fig.tight_layout()  
+        self.canvas.draw()
