@@ -6,7 +6,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import theme
 from datetime import datetime
 from . import NavBar
-from Models.admindashBE2 import adminBE
+from Models.admindashBE import adminBE
 
 
 class admindashboard(ctk.CTkFrame):
@@ -96,9 +96,9 @@ class admindashboard(ctk.CTkFrame):
 
         # Table of staff details    - Scroll bar (revisit)
         tableColumns = ("ID", "Full Name", "Phone", "Email", "Role", "Location")
-        staffTable = ttk.Treeview(tableFrame, columns=tableColumns, show="headings")
+        staffTable = ttk.Treeview(tableFrame, columns=tableColumns, show="headings", height=8)
 
-        scrollbar = ttk.Scrollbar(tableFrame, orient="vertical", command=staffTable.yview, height=8)
+        scrollbar = ttk.Scrollbar(tableFrame, orient="vertical", command=staffTable.yview)
         staffTable.configure(yscrollcommand=scrollbar.set)
 
         staffTable.grid(row=0, column=0, sticky="nsew")
@@ -153,7 +153,7 @@ class admindashboard(ctk.CTkFrame):
         # Same as staff details but for apartments
         tableColumns = ("Apartment", "City", "Tenant",
             "Lease Start", "Lease End", "Rent", "Status")
-        aptTable = ttk.Treeview(card, columns=tableColumns, show="headings", height=8)
+        aptTable = ttk.Treeview(card, columns=tableColumns, show="headings")
 
         for column in tableColumns:
             aptTable.heading(column, text=column)
