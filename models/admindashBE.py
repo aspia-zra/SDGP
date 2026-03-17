@@ -2,110 +2,162 @@
 from . import dbfunc
 from . import user_session
 import time, datetime
+import plotly.graph_objects as go
 
-def progressbarCalc():
-    conn = dbfunc.getconnection()
-    cursor = conn.cursor()
+class adminBE():# values = ["All Roles", "Front-desk Staff", "Maintenance", "Finance"]
+    def getStaffData():
+        # tableColumns = ("ID", "Full Name", "Phone", "Email", "Role", "Location")
+        conn = dbfunc.getconnection()
+        cursor = conn.cursor()
 
-    cursor.execute("SELECT COUNT(*) FROM Apartment WHERE locationID=%s"
-        ,(user_session.user_base,))
-    totalApt = cursor.fetchone()[0]
-    cursor.execute("SELECT COUNT(*) FROM Apartment WHERE Status='occupied' " \
-        "AND locationID=%s", (user_session.user_base,))
-    aptOccupied = cursor.fetchone()[0] 
-    aptPercent = (aptOccupied/totalApt)*100 if totalApt else 0
+        cursor.execute("""SELECT u.userID, u.fullName, u.Phone, u.Email, u.Role, l.city
+            FROM UserTbl u JOIN Location l ON u.locationID = l.locationID
+            WHERE LOWER(u.Role) != 'tenant' ORDER BY u.Role ASC""")
+        tableContents = cursor.fetchall()
 
-    cursor.execute("""SELECT COUNT(*) FROM Invoice i
-        JOIN LeaseAgreement l ON i.leaseID = l.leaseID
-        JOIN Apartment a ON l.apartmentID = a.apartmentID
-        WHERE a.locationID=%s""" ,(user_session.user_base,))
-    totalInvoice = cursor.fetchone()[0] 
-    cursor.execute("""SELECT COUNT(*) FROM Invoice i
-        JOIN LeaseAgreement l ON i.leaseID = l.leaseID
-        JOIN Apartment a ON l.apartmentID = a.apartmentID
-        WHERE i.Status='paid' AND a.locationID=%s""", (user_session.user_base,))
-    invoicePaid = cursor.fetchone()[0]
-    invoicePercent = (invoicePaid/totalInvoice)*100 if totalInvoice else 0
+        cursor.close()
+        conn.close()
 
-    cursor.execute("""SELECT COUNT(*) FROM Complaint c
-        JOIN Apartment a ON c.apartmentID = a.apartmentID
-        WHERE a.locationID=%s""" ,(user_session.user_base,))
-    totalComp = cursor.fetchone()[0]
-    cursor.execute("""SELECT COUNT(*) FROM Complaint c
-        JOIN Apartment a ON c.apartmentID = a.apartmentID
-        WHERE c.Status='closed' AND a.locationID=%s""", (user_session.user_base,))
-    compResolved = cursor.fetchone()[0]
-    compPercent = (compResolved/totalComp)*100 if totalComp else 0
-
-    cursor.close()
-    conn.close()
-
-    return aptPercent, invoicePercent, compPercent
-
-def dropdownBoxes():
-    conn = dbfunc.getconnection()
-    cursor = conn.cursor()
-    cursor.execute("""SELECT l.endDate, u.fullName
-        FROM LeaseAgreement l
-        JOIN Tenant t ON l.tenantID = t.tenantID
-        JOIN UserTbl u ON t.userID = u.userID
-        JOIN Apartment a ON l.apartmentID = a.apartmentID
-        WHERE l.endDate >= CURDATE() AND a.locationID=%s
-        ORDER BY l.endDate ASC
-        LIMIT 3""",(user_session.user_base, ))
-    leases = cursor.fetchall()
-
-    # Overdue rent
-    cursor.execute("""SELECT i.Amount, i.dueDate, u.fullName
-        FROM Invoice i
-        JOIN LeaseAgreement l ON i.leaseID = l.leaseID
-        Join Tenant t ON l.tenantID = t.tenantID
-        Join UserTbl u ON t.userID = u.userID
-        JOIN Apartment a ON l.apartmentID = a.apartmentID
-        WHERE i.dueDate <= CURDATE() AND i.Status = 'overdue' 
-            AND a.locationID=%s
-        ORDER BY i.dueDate ASC
-        LIMIT 3""",(user_session.user_base, ))
-    overdues = cursor.fetchall()
-
-    # High Priority Repairs
-    cursor.execute("""SELECT c.Severity, c.Description, u.fullName
-        FROM Complaint c
-        Join Tenant t ON c.tenantID = t.tenantID
-        Join UserTbl u ON t.userID = u.userID
-        JOIN Apartment a ON c.apartmentID = a.apartmentID           
-        WHERE c.Status = 'open' AND a.locationID=%s
-        ORDER BY c.Severity DESC
-        LIMIT 3""",(user_session.user_base, ))
-    repairs = cursor.fetchall()
-
-    cursor.close()
-    conn.close()
+        return tableContents
     
-    return leases, overdues, repairs
+    def getAptData(): 
+        # tableColumns = ("Apartment", "City", "Tenant", "Lease Start", "Lease End", "Rent", "Status")
+        conn = dbfunc.getconnection()
+        cursor = conn.cursor()
 
+        cursor.execute("""SELECT a.apartmentNumber, l.City, u.fullName, la.startDate,
+            la.endDate, a.monthlyRent, a.Status
+            FROM Apartment a
+            LEFT JOIN LeaseAgreement la ON la.apartmentID = a.apartmentID
+            LEFT JOIN Tenant t ON t.tenantID = la.tenantID
+            LEFT JOIN UserTbl u ON u.userID = t.userID
+            JOIN Location l ON l.locationID = a.locationID
+            ORDER BY a.apartmentNumber ASC""")
+        tableContents = cursor.fetchall()
 
-def graph():
-    conn = dbfunc.getconnection()
-    cursor = conn.cursor()
+        cursor.close()
+        conn.close()
+
+        return tableContents
     
-    cursor.execute("""SELECT SUM(i.Amount + l.depositAmount - m.Cost) AS profit,
-                   DATE_FORMAT(m.maintenanceDate, '%Y-%m') AS month 
-            FROM MaintenanceLog m
-            JOIN LeaseAgreement l ON m.apartmentID = l.apartmentID
-            JOIN Apartment a On l.apartmentID = a.apartmentID
-            JOIN Invoice i ON l.leaseID = i.leaseID
-            WHERE i.Status = 'paid' AND a.locationID = %s
-            GROUP BY month
-            ORDER BY month ASC
-            """, (user_session.user_base,))
-    profitloss = cursor.fetchall()
+    def getAptList():
+        conn = dbfunc.getconnection()
+        cursor = conn.cursor()
 
-    graphs = []
-    for item in profitloss:
-        graphs.append((item[1], item[0]))
+        cursor.execute("""SELECT apartmentNumber
+            FROM Apartment
+            WHERE Status = 'Occupied'
+            ORDER BY apartmentNumber ASC""")
+        aptList = cursor.fetchall()
 
-    cursor.close()
-    conn.close()
+        cursor.close()
+        conn.close()
 
-    return graphs
+        return aptList
+
+
+    def graph():
+        conn = dbfunc.getconnection()
+        cursor = conn.cursor()
+        
+        cursor.execute("""SELECT SUM(i.Amount + l.depositAmount - m.Cost) AS profit,
+                    DATE_FORMAT(m.maintenanceDate, '%Y-%m') AS month 
+                FROM MaintenanceLog m
+                JOIN LeaseAgreement l ON m.apartmentID = l.apartmentID
+                JOIN Apartment a On l.apartmentID = a.apartmentID
+                JOIN Invoice i ON l.leaseID = i.leaseID
+                WHERE i.Status = 'paid' AND a.locationID = %s
+                GROUP BY month
+                ORDER BY month ASC
+                """, (user_session.user_base,))
+        profitloss = cursor.fetchall()
+
+        graphs = []
+        for item in profitloss:
+            graphs.append((item[1], item[0]))
+
+        cursor.close()
+        conn.close()
+
+        return graphs
+    
+    def tenantGraphs(apt):
+        # late payment history per property graph - left
+        conn = dbfunc.getconnection()
+
+        try:
+            cursor = conn.cursor()
+            cursor.execute(""" SELECT u.fullName, DATE_FORMAT(i.dueDate, '%Y-%m') AS month, 
+                SUM(i.amount + l.depositAmount) AS paid
+                FROM UserTbl u
+                JOIN Tenant t ON t.userID = u.userID
+                JOIN LeaseAgreement l ON l.tenantID = t.tenantID
+                JOIN Apartment a ON a.apartmentID = l.apartmentID
+                JOIN Invoice i ON i.leaseID = l.leaseID
+                WHERE i.Status = 'paid' AND a.apartmentNumber = %s
+                GROUP BY u.fullName, month""",(apt,))
+            tenantData = cursor.fetchall()
+
+            cursor.execute("SELECT apartmentID FROM Apartment WHERE apartmentNumber = %s"
+                ,(apt,))
+            result = cursor.fetchone()
+            if result is None:
+                return [], [], []
+            apartmentID = result[0]
+
+            if apartmentID >= 1:
+                cursor.execute("SELECT COUNT(*) FROM Apartment WHERE apartmentID = %s", (apartmentID-1,))
+                prevExists = cursor.fetchone()[0] > 0
+
+                if prevExists:
+                    cursor.execute(""" SELECT u.fullName, DATE_FORMAT(i.dueDate, '%Y-%m') AS month, 
+                    SUM(i.amount + l.depositAmount) AS paid
+                    FROM UserTbl u
+                    JOIN Tenant t ON t.userID = u.userID
+                    JOIN LeaseAgreement l ON l.tenantID = t.tenantID
+                    JOIN Invoice i ON i.leaseID = l.leaseID
+                    WHERE i.Status = 'paid' AND l.apartmentID = %s
+                    GROUP BY u.fullName, month""",(apartmentID-1,))
+                    neighbour1 = cursor.fetchall()
+                else:
+                    neighbour1 = None
+
+                cursor.execute("SELECT COUNT(*) FROM Apartment WHERE apartmentID = %s", (apartmentID+1,))
+                nextExists = cursor.fetchone()[0] > 0
+                
+                if nextExists:
+                    cursor.execute(""" SELECT u.fullName, DATE_FORMAT(i.dueDate, '%Y-%m') AS month, 
+                    SUM(i.amount + l.depositAmount) AS paid
+                    FROM UserTbl u
+                    JOIN Tenant t ON t.userID = u.userID
+                    JOIN LeaseAgreement l ON l.tenantID = t.tenantID
+                    JOIN Invoice i ON i.leaseID = l.leaseID
+                    WHERE i.Status = 'paid' AND l.apartmentID = %s
+                    GROUP BY u.fullName, month""",(apartmentID+1,))
+                    neighbour2 = cursor.fetchall()
+                else: 
+                    neighbour2 = None
+
+                return tenantData, neighbour1, neighbour2
+            else:
+                cursor.execute("SELECT COUNT(*) FROM Apartment WHERE apartmentID = %s", (apartmentID+1,))
+                nextExists = cursor.fetchone()[0] > 0
+
+                if nextExists:
+                    cursor.execute(""" SELECT u.fullName, DATE_FORMAT(i.dueDate, '%Y-%m') AS month, 
+                    SUM(i.amount + l.depositAmount) AS paid
+                    FROM UserTbl u
+                    JOIN Tenant t ON t.userID = u.userID
+                    JOIN LeaseAgreement l ON l.tenantID = t.tenantID
+                    JOIN Invoice i ON i.leaseID = l.leaseID
+                    WHERE i.Status = 'paid' AND l.apartmentID = %s
+                    GROUP BY u.fullName, month""",(apartmentID+1,))
+                    neighbour1 = cursor.fetchall()
+                else:
+                    neighbour1 = None
+
+                return tenantData, neighbour1, None
+        finally:
+            cursor.close()
+            conn.close()
+        
