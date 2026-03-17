@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from . import theme
 from gui import nav as NavBar
+from models.mngdash import mngBE
 
 
 class mngdashboard(ctk.CTkFrame): # i need to make sure im calling the correct navbar
@@ -139,7 +140,7 @@ class mngdashboard(ctk.CTkFrame): # i need to make sure im calling the correct n
             self.addAptForm.pack(fill="x", padx=15, pady=10)
 
 
-    def submit_apartment(self):
+    def submit_apartment(self): # add form validation for city etc and filled in fields
         apt = self.apt_number_entry.get()
         city = self.city_entry.get()
         rent = self.rent_entry.get()
@@ -148,6 +149,12 @@ class mngdashboard(ctk.CTkFrame): # i need to make sure im calling the correct n
         new_row = (apt, city, "-", "-", "-", f"£{rent}", status)
 
         self.aptTable.insert("", "end", values=new_row)
+
+
+
+# then send that data to backend:
+
+# then refresh and reload the data
 
         # clear fields
         self.apt_number_entry.delete(0, "end")
@@ -158,10 +165,14 @@ class mngdashboard(ctk.CTkFrame): # i need to make sure im calling the correct n
         # hide
         self.addAptForm.pack_forget()
 
-    def load_table_data(self):
-        # clear table first
-        for row in self.aptTable.get_children():
-            self.aptTable.delete(row)
+    # def load_table_data(self):
+    #     # clear table first
+    #     for row in self.aptTable.get_children():
+    #         self.aptTable.delete(row)
+
+# DUMMY DATA REPLACE
+
+
 
         dummydata = [
             ("A101", "Bristol", "John Doe", "2025-01-01", "2027-01-01", "£900", "Occupied"),
