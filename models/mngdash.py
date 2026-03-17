@@ -10,14 +10,21 @@ class mngBE():# values = ["All Roles", "Front-desk Staff", "Maintenance", "Finan
         conn = db.getconnection()
         cursor = conn.cursor()
 
-        cursor.execute("""SELECT a.apartmentNumber, l.city
-            FROM UserTbl u JOIN Location l ON u.locationID = l.locationID
-            WHERE LOWER(u.Role) != 'tenant' ORDER BY u.Role ASC""")
+        cursor.execute("""
+                        SELECT 
+                            a.apartmentNumber, 
+                            a.locationID, 
+                            lease.monthlyRent, 
+                            lease.Status, 
+                            lease.endDate
+                        FROM apartment, a
+                        JOIN leaseagreement lease
+                            ON a.apartmentID = lease.apartmentID
+                     """)
         data = cursor.fetchall()
-
         cursor.close()
         conn.close()
 
-        return data
+        return data # back to FE table
     
     

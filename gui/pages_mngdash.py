@@ -48,10 +48,7 @@ class mngdashboard(ctk.CTkFrame): # i need to make sure im calling the correct n
         self.scrollFrame.grid(row=1, column=1, padx=20, pady=10, sticky="nsew")
         self.scrollFrame.grid_columnconfigure(0, weight=1)
 
-        # self.manageStaffCard()
         self.manageAptCard()
-        # self.graphsCard()
-        # self.quickActionsCard()
         
     def manageAptCard(self): # Will cover both the manage apt and display leases
 
@@ -75,7 +72,7 @@ class mngdashboard(ctk.CTkFrame): # i need to make sure im calling the correct n
 
         ctk.CTkEntry( # Will only works for apt number
             filterFrame,
-            placeholder_text = "Search Apartment..."
+            placeholder_text = "Search by Apartment Number..."
         ).grid(row=0, column=0, padx=5)
 
         ctk.CTkComboBox(
@@ -118,9 +115,9 @@ class mngdashboard(ctk.CTkFrame): # i need to make sure im calling the correct n
 
         # hide initially
         self.addAptForm.pack_forget()
-# tables
-        tableColumns = ("Apartment", "City", "Tenant",
-            "Lease Start", "Lease End", "Rent", "Status")
+# tables to display intially
+        tableColumns = ("Apartment no.", "City", "Monthly Rent",
+            "Status", "Lease End")
 
         self.aptTable = ttk.Treeview(card, columns=tableColumns, show="headings", height=8)
 
@@ -132,7 +129,7 @@ class mngdashboard(ctk.CTkFrame): # i need to make sure im calling the correct n
 
         self.load_table_data()
             
-            # here, just add a button to expand and add a new apartment
+            #button to expand and add a new apartment
     def toggle_add_apartment(self):
         if self.addAptForm.winfo_ismapped():
             self.addAptForm.pack_forget()
@@ -140,17 +137,16 @@ class mngdashboard(ctk.CTkFrame): # i need to make sure im calling the correct n
             self.addAptForm.pack(fill="x", padx=15, pady=10)
 
 
-    def submit_apartment(self): # add form validation for city etc and filled in fields
+    def submit_apartment(self): # click submit and get inputted values 
+        #later add form validation for city etc and filled in fields
         apt = self.apt_number_entry.get()
         city = self.city_entry.get()
         rent = self.rent_entry.get()
         status = self.status_combo.get()
 
-        new_row = (apt, city, "-", "-", "-", f"£{rent}", status)
+        new_row = (apt, city, "-", "-", f"£{rent}", status, "-")
 
         self.aptTable.insert("", "end", values=new_row)
-
-
 
 # then send that data to backend:
 
@@ -165,20 +161,16 @@ class mngdashboard(ctk.CTkFrame): # i need to make sure im calling the correct n
         # hide
         self.addAptForm.pack_forget()
 
-    # def load_table_data(self):
+    def load_table_data(self):
     #     # clear table first
-    #     for row in self.aptTable.get_children():
-    #         self.aptTable.delete(row)
-
-# DUMMY DATA REPLACE
-
-
-
-        dummydata = [
-            ("A101", "Bristol", "John Doe", "2025-01-01", "2027-01-01", "£900", "Occupied"),
-            ("A102", "Bristol", "John Doe", "2023-01-01", "2024-01-01", "£950", "Occupied"),
-            ("A103", "Bristol", "-", "-", "-", "£850", "Available"),
-        ]
-
-        for row in dummydata:
-            self.aptTable.insert("", "end", values=row)
+        for row in self.aptTable.get_children():
+             self.aptTable.delete(row)
+        data = mngBE.getAptData() # from BE
+        for row in data: # now put data in treeview
+            apt_number = row[0]
+            city = row[1] 
+            monthly_rent = f"£{row[2]}"
+            status = row[3]
+            end_date = row[4] if row[4] else "-"
+            
+            self.aptTable.insert("", "end", values=(row[0], row[1], row[2], row[3], row[4]))
