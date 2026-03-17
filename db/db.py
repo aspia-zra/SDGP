@@ -6,5 +6,5 @@ def getconnection():
         host="localhost",
         user="root",
         password="Root123456!",
-        database="y2asd" 
+        database="secondverparagonapartment"
     )

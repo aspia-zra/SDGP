@@ -13,13 +13,16 @@ class mngBE():# values = ["All Roles", "Front-desk Staff", "Maintenance", "Finan
         cursor.execute("""
                         SELECT 
                             a.apartmentNumber, 
-                            a.locationID, 
-                            lease.monthlyRent, 
-                            lease.Status, 
+                            l.City,
+                            a.monthlyRent,
+                            a.Status,
                             lease.endDate
-                        FROM apartment, a
-                        JOIN leaseagreement lease
+                        FROM Apartment a
+                        JOIN Location l
+                            ON a.locationID = l.locationID
+                        LEFT JOIN LeaseAgreement lease
                             ON a.apartmentID = lease.apartmentID
+                        ORDER BY a.apartmentNumber
                      """)
         data = cursor.fetchall()
         cursor.close()
