@@ -30,6 +30,7 @@ CREATE TABLE `Apartment` (
   `monthlyRent` decimal(10,2) NOT NULL,
   `Status` enum('available','occupied','maintenance') DEFAULT 'available',
   PRIMARY KEY (`apartmentID`),
+  UNIQUE KEY `uq_apartment_number` (`apartmentNumber`),
   KEY `idx_apartment_location` (`locationID`),
   CONSTRAINT `apartment_ibfk_1` FOREIGN KEY (`locationID`) REFERENCES `Location` (`locationID`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8;
