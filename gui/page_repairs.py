@@ -3,14 +3,14 @@ import customtkinter as ctk
 from tkinter import messagebox
 from datetime import datetime
 from models.repairs import Repair
+from models import theme
 from db.db_connect import Database
+from gui.nav import navbar as NavigationBar
 
 
 # Use a light appearance mode for the app
 ctk.set_appearance_mode("light")
 ctk.set_default_color_theme("blue")
-
-from gui.mnav import create_navbar
 
 
 class RepairsPage(ctk.CTkFrame):
@@ -20,39 +20,55 @@ class RepairsPage(ctk.CTkFrame):
 
         # allow reusing a shared database connection if passed in
         self.db = db or Database()
+        controller = getattr(self.winfo_toplevel(), "app_controller", self.winfo_toplevel())
 
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(1, weight=1)
 
-        self.navbar = create_navbar(
-            self,
-            self.open_dashboard,
-            self.open_repairs,
-            self.open_complaints,
-            self.open_settings
-        )
+        self.navbar = NavigationBar(self, controller)
         self.create_widgets()
 
-    def open_dashboard(self):
-        for widget in self.master.winfo_children():
+    def open_maintenance_dashboard(self):
+        host = self.winfo_toplevel()
+        navigate = getattr(host, "open_maintenance_dashboard", None)
+
+        if callable(navigate):
+            navigate()
+            return
+
+        for widget in host.winfo_children():
             widget.destroy()
 
         from .page_mdash import dashboard
-        dashboard(self.master, self.db)
+        dashboard(host, self.db)
 
     def open_repairs(self):
-        for widget in self.master.winfo_children():
+        host = self.winfo_toplevel()
+        navigate = getattr(host, "open_repairs_page", None)
+
+        if callable(navigate):
+            navigate()
+            return
+
+        for widget in host.winfo_children():
             widget.destroy()
 
-        repairs_page = RepairsPage(self.master, self.db)
+        repairs_page = RepairsPage(host, self.db)
         repairs_page.pack(fill="both", expand=True)
 
     def open_complaints(self):
-        for widget in self.master.winfo_children():
+        host = self.winfo_toplevel()
+        navigate = getattr(host, "open_complaints_page", None)
+
+        if callable(navigate):
+            navigate()
+            return
+
+        for widget in host.winfo_children():
             widget.destroy()
 
         from .page_complaints import ComplaintsPage
-        complaints_page = ComplaintsPage(self.master)
+        complaints_page = ComplaintsPage(host, self.db)
         complaints_page.pack(fill="both", expand=True)
 
     def open_settings(self):
@@ -63,10 +79,12 @@ class RepairsPage(ctk.CTkFrame):
             messagebox.showinfo("Settings", "Settings are not available yet.")
             return
 
-        for widget in self.master.winfo_children():
+        host = self.winfo_toplevel()
+
+        for widget in host.winfo_children():
             widget.destroy()
 
-        settings.settings(self.master)
+        settings.settings(host)
 
 
     def create_widgets(self):
@@ -78,7 +96,7 @@ class RepairsPage(ctk.CTkFrame):
         title = ctk.CTkLabel(
             self.container,
             text="Repair Booking",
-            font=("Segoe UI", 28, "bold")
+            font=theme.TITLE_FONT
         )
         title.grid(row=0, column=0, pady=30)
 
@@ -89,7 +107,7 @@ class RepairsPage(ctk.CTkFrame):
 
         # form components
         # issue
-        ctk.CTkLabel(form, text="Issue / Notes", font=("Segoe UI", 16)).grid(
+        ctk.CTkLabel(form, text="Issue / Notes", font=theme.BODY_FONT).grid(
             row=0, column=0, padx=20, pady=15, sticky="e"
         )
 
@@ -97,7 +115,7 @@ class RepairsPage(ctk.CTkFrame):
         self.issue_entry.grid(row=0, column=1, padx=20, pady=15, sticky="ew")
 
         # apartment
-        ctk.CTkLabel(form, text="Apartment ID", font=("Segoe UI", 16)).grid(
+        ctk.CTkLabel(form, text="Apartment ID", font=theme.BODY_FONT).grid(
             row=1, column=0, padx=20, pady=15, sticky="e"
         )
 
@@ -105,7 +123,7 @@ class RepairsPage(ctk.CTkFrame):
         self.apartment_entry.grid(row=1, column=1, padx=20, pady=15, sticky="ew")
 
         # date
-        ctk.CTkLabel(form, text="Repair Date (YYYY-MM-DD)", font=("Segoe UI", 16)).grid(
+        ctk.CTkLabel(form, text="Repair Date (YYYY-MM-DD)", font=theme.BODY_FONT).grid(
             row=2, column=0, padx=20, pady=15, sticky="e"
         )
 
@@ -113,7 +131,7 @@ class RepairsPage(ctk.CTkFrame):
         self.date_entry.grid(row=2, column=1, padx=20, pady=15, sticky="ew")
 
         # priority
-        ctk.CTkLabel(form, text="Priority", font=("Segoe UI", 16)).grid(
+        ctk.CTkLabel(form, text="Priority", font=theme.BODY_FONT).grid(
             row=3, column=0, padx=20, pady=15, sticky="e"
         )
 
@@ -130,6 +148,9 @@ class RepairsPage(ctk.CTkFrame):
         ctk.CTkButton(
             button_frame,
             text="Display Cost",
+            fg_color=theme.PRIMARY,
+            hover_color=theme.PRIMARY_DARK,
+            text_color=theme.SURFACE,
             height=45,
             command=self.display_cost
         ).grid(row=0, column=0, padx=20)
@@ -137,6 +158,9 @@ class RepairsPage(ctk.CTkFrame):
         ctk.CTkButton(
             button_frame,
             text="Book Now",
+            fg_color=theme.PRIMARY,
+            hover_color=theme.PRIMARY_DARK,
+            text_color=theme.SURFACE,
             height=45,
             command=self.book_repair
         ).grid(row=0, column=1, padx=20)
