@@ -11,7 +11,7 @@ from tkinter import ttk, messagebox
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from . import theme
-from gui import nav as NavBar
+from gui import nav as nav
 from models.mngdash import mngBE
 
 
@@ -24,7 +24,7 @@ class mngdashboard(ctk.CTkFrame):
         self.grid_columnconfigure(1, weight=1)
         self.grid_rowconfigure(1, weight=1)
 
-        self.nav = NavBar.navbar(self, parent)
+        self.nav = nav.navbar(self, parent)
         self.nav.grid(row=0, rowspan=2, column=0, sticky="ns")
 
         self._create_header()
