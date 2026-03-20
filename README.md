@@ -13,7 +13,7 @@ Incomplete dashboards and status:
 - management dash (azra: front end done)
 - admin dash (imaan: front end done)
 - tenant dash (khanh: idk)
-- drashtis dash (idk)
+- drashtis dash (front desk dashboard front and backend done, just need to add settings and login button)
 - finance dash (rowdha: merging with merccy)
 
 
