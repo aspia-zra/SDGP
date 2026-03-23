@@ -61,7 +61,6 @@ CREATE TABLE `Complaint` (
   `reportDate` datetime DEFAULT CURRENT_TIMESTAMP,
   `Severity` enum('1','2','3') NOT NULL DEFAULT '1',
   `Status` enum('open','closed') DEFAULT 'open',
-  `Resolution` text,
   PRIMARY KEY (`complaintID`),
   KEY `idx_complaint_tenant` (`tenantID`),
   KEY `idx_complaint_apartment` (`apartmentID`),

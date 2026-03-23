@@ -230,7 +230,7 @@ class Repair:
     @staticmethod
     def get_closed_complaints(db):
         query = """
-        SELECT complaintID, apartmentID, Description, reportDate, Resolution, Severity
+        SELECT complaintID, apartmentID, Description, reportDate, FinalResolution, Severity
         FROM Complaint
         WHERE Status = 'closed'
         """
@@ -266,7 +266,7 @@ class Repair:
         query = """
         UPDATE Complaint
         SET Status = 'closed',
-            Resolution = %s
+            FinalResolution = %s
         WHERE complaintID = %s
         """
         db.execute(query, (resolution, complaint_id))
@@ -352,7 +352,7 @@ class Repair:
                 "priority": Repair._normalize_priority(c["Severity"]),
                 "timeTaken": "-",
                 "cost": "-",
-                "resolution": c["Resolution"],
+                "resolution": c["FinalResolution"],
                 "_sort_date": c["reportDate"],
             })
 
@@ -398,7 +398,7 @@ class Repair:
             query = """
             UPDATE Complaint
             SET Status = 'closed',
-                Resolution = %s,
+                FinalResolution = %s,
                 reportDate = NOW()
             WHERE complaintID = %s
             """
