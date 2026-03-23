@@ -2,7 +2,7 @@
 from . import dbfunc
 from . import user_session
 import time, datetime
-import plotly.graph_objects as go
+import bcrypt
 
 class adminBE():# values = ["All Roles", "Front-desk Staff", "Maintenance", "Finance"]
     def getStaffData():
@@ -19,6 +19,33 @@ class adminBE():# values = ["All Roles", "Front-desk Staff", "Maintenance", "Fin
         conn.close()
 
         return tableContents
+    
+    def addStaff(fullname,phone,email,password,role):
+        conn = dbfunc.getconnection()
+        cursor = conn.cursor()
+
+        today = datetime.datetime.now().date()
+        hashed = bcrypt.hashpw(password.encode(), bcrypt.gensalt())
+
+        cursor.execute("""INSERT INTO UserTbl (fullName, Phone, Email, Password,
+            Role, locationID, Created_at) VALUES (%s,%s,%s,%s,%s,%s,%s)""",
+            (fullname, phone, email, hashed, role, user_session.user_base, today))
+        conn.commit()
+
+        cursor.close()
+        conn.close()
+
+    def editStaff(userId, fullname, phone, email, role): ##COMPLETE
+        conn = dbfunc.getconnection()
+        cursor = conn.cursor()
+
+        cursor.execute("""UPDATE UserTbl 
+            SET fullName = %s , Phone = %s, Email = %s, Role = %s
+            WHERE userID = %s""",(fullname, phone, email, role, userId))
+        conn.commit()
+
+        cursor.close()
+        conn.close()
     
     def getAptData(): 
         # tableColumns = ("Apartment", "City", "Tenant", "Lease Start", "Lease End", "Rent", "Status")
@@ -54,7 +81,6 @@ class adminBE():# values = ["All Roles", "Front-desk Staff", "Maintenance", "Fin
         conn.close()
 
         return aptList
-
 
     def graph():
         conn = dbfunc.getconnection()
