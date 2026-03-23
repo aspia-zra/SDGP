@@ -29,11 +29,27 @@ class DashboardPage(ctk.CTkFrame):
         if not hasattr(root, "unblock_update_dimensions_event"):
             root.unblock_update_dimensions_event = lambda: None
 
-    def _table_header_label(self, parent, text, row, column):
-        ctk.CTkLabel(parent, text=text, font=theme.BODY_FONT).grid(row=row, column=column, padx=5, pady=5, sticky="w")
+    def _table_header_label(self, parent, text, row, column, anchor="center"):
+        ctk.CTkLabel(parent, text=text, font=theme.BODY_FONT, anchor=anchor).grid(
+            row=row,
+            column=column,
+            padx=5,
+            pady=5,
+            sticky="ew",
+        )
 
-    def _table_value_label(self, parent, text, row, column, wraplength=0):
-        ctk.CTkLabel(parent, text=text, wraplength=wraplength, justify="left").grid(row=row, column=column, padx=5, pady=5, sticky="w")
+    def _table_value_label(self, parent, text, row, column, wraplength=0, anchor="center"):
+        ctk.CTkLabel(parent, text=text, wraplength=wraplength, justify="center", anchor=anchor).grid(
+            row=row,
+            column=column,
+            padx=5,
+            pady=5,
+            sticky="ew",
+        )
+
+    def _configure_table_columns(self, frame, column_specs):
+        for col, (_, width, _) in enumerate(column_specs):
+            frame.grid_columnconfigure(col, minsize=width, weight=0)
 
     def _build(self):
         if self.main_container is not None:
@@ -65,16 +81,23 @@ class DashboardPage(ctk.CTkFrame):
 
         open_header_frame = ctk.CTkFrame(open_frame, fg_color="transparent")
         open_header_frame.grid(row=1, column=0, sticky="ew", padx=10)
-        open_columns = ["Type", "Apartment", "Issue", "Date", "Worker", "Priority", "", ""]
-        for col in range(len(open_columns)):
-            open_header_frame.grid_columnconfigure(col, weight=2 if col == 2 else 1)
-        for i, header in enumerate(open_columns):
-            self._table_header_label(open_header_frame, header, 0, i)
+        open_columns = [
+            ("Type", 90, "center"),
+            ("Apartment", 100, "center"),
+            ("Issue", 260, "center"),
+            ("Date", 100, "center"),
+            ("Worker", 90, "center"),
+            ("Priority", 90, "center"),
+            ("", 100, "center"),
+            ("", 110, "center"),
+        ]
+        self._configure_table_columns(open_header_frame, open_columns)
+        for i, (header, _, anchor) in enumerate(open_columns):
+            self._table_header_label(open_header_frame, header, 0, i, anchor=anchor)
 
         open_scroll = ctk.CTkScrollableFrame(open_frame, fg_color="transparent", height=240)
         open_scroll.grid(row=2, column=0, sticky="nsew", padx=10, pady=(4, 10))
-        for col in range(len(open_columns)):
-            open_scroll.grid_columnconfigure(col, weight=2 if col == 2 else 1)
+        self._configure_table_columns(open_scroll, open_columns)
 
         requests = Repair.get_openrequests(self.db)
         for idx, req in enumerate(requests):
@@ -117,16 +140,20 @@ class DashboardPage(ctk.CTkFrame):
 
         completed_header_frame = ctk.CTkFrame(completed_frame, fg_color="transparent")
         completed_header_frame.grid(row=1, column=0, sticky="ew", padx=10)
-        completed_columns = ["Type", "Apartment", "Issue", "Date", ""]
-        for col in range(len(completed_columns)):
-            completed_header_frame.grid_columnconfigure(col, weight=2 if col == 2 else 1)
-        for i, header in enumerate(completed_columns):
-            self._table_header_label(completed_header_frame, header, 0, i)
+        completed_columns = [
+            ("Type", 90, "center"),
+            ("Apartment", 100, "center"),
+            ("Issue", 260, "center"),
+            ("Date", 100, "center"),
+            ("", 130, "center"),
+        ]
+        self._configure_table_columns(completed_header_frame, completed_columns)
+        for i, (header, _, anchor) in enumerate(completed_columns):
+            self._table_header_label(completed_header_frame, header, 0, i, anchor=anchor)
 
         completed_scroll = ctk.CTkScrollableFrame(completed_frame, fg_color="transparent", height=240)
         completed_scroll.grid(row=2, column=0, sticky="nsew", padx=10, pady=(4, 10))
-        for col in range(len(completed_columns)):
-            completed_scroll.grid_columnconfigure(col, weight=2 if col == 2 else 1)
+        self._configure_table_columns(completed_scroll, completed_columns)
 
         jobs = Repair.get_completed_requests(self.db)
         for idx, job in enumerate(jobs):

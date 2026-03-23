@@ -83,8 +83,8 @@ class RepairsPage(ctk.CTkFrame):
 
 
     def create_widgets(self):
-        # Main content container (right side)
-        self.container = ctk.CTkFrame(self)
+        # Main content container (right side) with vertical scrolling.
+        self.container = ctk.CTkScrollableFrame(self)
         self.container.grid(row=0, column=1, sticky="nsew", padx=40, pady=20)
         self.container.grid_columnconfigure(0, weight=1)
 

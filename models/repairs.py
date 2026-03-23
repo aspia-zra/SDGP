@@ -128,9 +128,17 @@ class Repair:
     @staticmethod
     def get_open_repairs(db):
         query = """
-        SELECT logID, apartmentID, userID, maintenanceDate, Priority, InitialIssue, RepairDetails
-        FROM MaintenanceLog
-        WHERE timeTaken IS NULL
+        SELECT ml.logID,
+               ml.apartmentID,
+               ml.userID,
+               u.fullName AS workerName,
+               ml.maintenanceDate,
+               ml.Priority,
+               ml.InitialIssue,
+               ml.RepairDetails
+        FROM MaintenanceLog ml
+        LEFT JOIN UserTbl u ON u.userID = ml.userID
+        WHERE ml.timeTaken IS NULL
         """
         return db.fetch_all(query)
 
@@ -138,9 +146,20 @@ class Repair:
     @staticmethod
     def get_completed_repairs(db):
         query = """
-        SELECT logID, apartmentID, userID, maintenanceDate, Priority, InitialIssue, RepairDetails, FinalResolution, timeTaken, Cost
-        FROM MaintenanceLog
-        WHERE timeTaken IS NOT NULL
+        SELECT ml.logID,
+               ml.apartmentID,
+               ml.userID,
+               u.fullName AS workerName,
+               ml.maintenanceDate,
+               ml.Priority,
+               ml.InitialIssue,
+               ml.RepairDetails,
+               ml.FinalResolution,
+               ml.timeTaken,
+               ml.Cost
+        FROM MaintenanceLog ml
+        LEFT JOIN UserTbl u ON u.userID = ml.userID
+        WHERE ml.timeTaken IS NOT NULL
         """
         return db.fetch_all(query)
 
@@ -173,6 +192,7 @@ class Repair:
         for r in repairs:
             issue = (r.get("InitialIssue") or "").strip()
             priority = Repair._normalize_priority(r.get("Priority"))
+            worker_label = (r.get("workerName") or "").strip() or r.get("userID") or "-"
 
             requests.append({
                 "id": r["logID"],
@@ -181,7 +201,7 @@ class Repair:
                 "issue": issue or "-",
                 "repairDetails": (r.get("RepairDetails") or "-").strip(),
                 "date": Repair._format_date_only(r["maintenanceDate"]),
-                "worker": r["userID"],
+                "worker": worker_label,
                 "priority": Repair._normalize_priority(priority)
             })
 
@@ -215,6 +235,7 @@ class Repair:
         for r in repairs:
             issue = (r.get("InitialIssue") or "").strip()
             priority = Repair._normalize_priority(r.get("Priority"))
+            resolution_text = str(r.get("FinalResolution") or "-").strip() or "-"
 
             requests.append({
                 "id": r["logID"],
@@ -226,7 +247,7 @@ class Repair:
                 "priority": Repair._normalize_priority(priority),
                 "timeTaken": r["timeTaken"],
                 "cost": r["Cost"],
-                "resolution": (r.get("FinalResolution") or "-").strip(),
+                "resolution": resolution_text,
                 "_sort_date": r["maintenanceDate"],
             })
 
@@ -235,11 +256,10 @@ class Repair:
             reverse=True,
         )
 
-        limited_requests = requests[:5]
-        for item in limited_requests:
+        for item in requests:
             item.pop("_sort_date", None)
 
-        return limited_requests
+        return requests
 
 
     @staticmethod
@@ -263,8 +283,7 @@ class Repair:
             UPDATE MaintenanceLog
             SET timeTaken = %s,
                 Cost = %s,
-                FinalResolution = %s,
-                maintenanceDate = NOW()
+                FinalResolution = %s
             WHERE logID = %s
             """
 
