@@ -1,7 +1,5 @@
 from db.db_connect import Database
 from datetime import datetime
-from tkinter.ttk import Button, Entry
-import tkinter.messagebox as messagebox
 
 class Complaints:
     def __init__(self, db=None):
@@ -58,40 +56,3 @@ class Complaints:
             ),
         )
         return True
-
-    def submit_complaint(self):
-        reason = self.Entrycomplaint.get()
-        severity = self.Entryseverity.get()
-        apartmentnumber = self.Entryapartmentnumber.get()
-        complaintdetail = self.Entrycomplaintdetail.get()
-
-        inserted = self.add_complaint(reason, severity, apartmentnumber, complaintdetail)
-        if (inserted == True):
-            messagebox.showinfo("Success", "Complaint submitted successfully")
-            self.get_complaint_history() #refreshes the table that shows 5 most recent complaints
-
-    def get_recent_complaints(self, tenantID):
-        query = """
-        SELECT Description, reportDate, Severity, Status
-        FROM Complaint
-        WHERE tenantID = %s
-        ORDER BY reportDate DESC
-        LIMIT 5
-        """
-        return self.db.fetch_all(query, (tenantID,))
-    
-    def get_complaint_history(self):
-        tenantID = self.get_tenantID(self.Entryapartmentnumber.get())
-        complaints = self.get_recent_complaints(tenantID)
-
-        # Clear existing data in the treeview
-        for item in self.tree.get_children():
-            self.tree.delete(item)
-
-        # Insert new data into the treeview
-        for complaint in complaints:
-            reason = complaint["Description"]
-            timestamp = complaint["reportDate"]
-            severity = complaint["Severity"]
-            status = complaint["Status"]
-            self.tree.insert("", "end", values=(reason, timestamp, severity, status))

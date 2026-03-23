@@ -98,45 +98,6 @@ class Repair:
         return row.get("apartmentID")
 
 
-    @staticmethod
-    def generate_report(db):
-        query = "SELECT * FROM MaintenanceLog"
-        return db.fetch_all(query)
-
-
-    @staticmethod
-    def record_resolution(db, log_id, time_taken, cost, notes):
-        query = """
-        UPDATE MaintenanceLog
-        SET timeTaken=%s, Cost=%s, FinalResolution=%s
-        WHERE logID=%s
-        """
-        db.execute(query, (time_taken, cost, notes, log_id))
-
-
-    @staticmethod
-    def check_availability(db, user_id, date):
-        query = """
-        SELECT COUNT(*) AS worker_count
-        FROM MaintenanceLog
-        WHERE userID = %s AND DATE(maintenanceDate) = DATE(%s)
-        """
-        result = db.fetch_one(query, (user_id, date))
-        return result.get("worker_count", 0) == 0
-
-
-    @staticmethod
-    def check_role(db, user_id, required_role="maintenance"):
-        query = "SELECT Role FROM UserTbl WHERE userID = %s"
-        role = db.fetch_one(query, (user_id,))
-
-        if role is None:
-            return False
-
-        return role.get("Role") == required_role
-
-
-
 # Complaint helper functions
 
 
@@ -182,30 +143,6 @@ class Repair:
         WHERE timeTaken IS NOT NULL
         """
         return db.fetch_all(query)
-
-
-    @staticmethod
-    def close_complaint(db, complaint_id, resolution):
-        query = """
-        UPDATE Complaint
-        SET Status = 'closed',
-            FinalResolution = %s
-        WHERE complaintID = %s
-        """
-        db.execute(query, (resolution, complaint_id))
-
-
-    @staticmethod
-    def complete_repair(db, log_id, time_taken, cost, notes):
-        query = """
-        UPDATE MaintenanceLog
-        SET timeTaken = %s,
-            Cost = %s,
-            FinalResolution = %s,
-            maintenanceDate = NOW()
-        WHERE logID = %s
-        """
-        db.execute(query, (time_taken, cost, notes, log_id))
 
 
 # -----------------------------
@@ -333,7 +270,7 @@ class Repair:
 
             db.execute(query, (time_taken, cost, notes, request_id))
 
-    @staticmethod
+    @staticmethod #khanh this is where i was trying to send tenants their booked repair notifications, you can change the next two functions completely or delete them for the banner
     def get_tenant_email_by_apartment(db, apartment_id):
         query = """
         SELECT t.Email
@@ -346,7 +283,6 @@ class Repair:
         row = db.fetch_one(query, (apartment_id,))
         if not row:
             return None
-
         return row.get("Email")
 
     @staticmethod
@@ -355,34 +291,31 @@ class Repair:
         if not tenant_email:
             return False, "No active tenant email found for this apartment."
 
-        smtp_host = os.getenv("SMTP_HOST")
-        smtp_port = int(os.getenv("SMTP_PORT", "587"))
         smtp_user = os.getenv("SMTP_USER")
         smtp_password = os.getenv("SMTP_PASSWORD")
-        sender_email = os.getenv("SMTP_FROM", smtp_user)
 
-        if not smtp_host or not sender_email:
-            return False, "SMTP is not configured. Set SMTP_HOST and SMTP_USER/SMTP_FROM."
+        if not smtp_user or not smtp_password:
+            return False, "Email not configured. Set SMTP_USER and SMTP_PASSWORD environment variables."
 
         date_text = Repair._format_date_only(scheduled_date)
         body = (
-            "Please be aware that a technician/worker will be resolving your issue on "
-            f"{date_text}."
+            "Dear Tenant,\n\n"
+            "Please be aware that a technician will be visiting your apartment to resolve "
+            f"your maintenance request on {date_text}.\n\n"
+            "Regards,\nParagon Apartments Management"
         )
 
         message = EmailMessage()
         message["Subject"] = "Maintenance Visit Notice"
-        message["From"] = sender_email
+        message["From"] = smtp_user
         message["To"] = tenant_email
         message.set_content(body)
 
         try:
-            with smtplib.SMTP(smtp_host, smtp_port, timeout=20) as smtp:
+            with smtplib.SMTP("smtp.gmail.com", 587, timeout=20) as smtp:
                 smtp.starttls()
-                if smtp_user and smtp_password:
-                    smtp.login(smtp_user, smtp_password)
+                smtp.login(smtp_user, smtp_password)
                 smtp.send_message(message)
-
             return True, f"Email notification sent to {tenant_email}."
         except Exception as exc:
             return False, f"Email send failed: {exc}"

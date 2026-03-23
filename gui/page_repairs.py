@@ -138,7 +138,7 @@ class RepairsPage(ctk.CTkFrame):
             row=4, column=0, padx=20, pady=15, sticky="e"
         )
 
-        self.priority_box = ctk.CTkComboBox(
+        self.priority_box = ctk.CTkSegmentedButton(
             form,
             values=["1", "2", "3"]
         )
@@ -239,39 +239,34 @@ class RepairsPage(ctk.CTkFrame):
 
             db_date = self.to_db_date(date)
 
-            # Worker availability check (1 job per worker per day)
-
-            total_workers_query = """
-            SELECT COUNT(*) AS total_workers
-            FROM UserTbl
-            WHERE Role = 'maintenance'
+            # Worker availability check and assignment (1 job per worker per day).
+            # We select a maintenance user who has no job on the chosen date.
+            available_worker_query = """
+            SELECT u.userID
+            FROM UserTbl u
+            LEFT JOIN MaintenanceLog m
+              ON m.userID = u.userID
+             AND DATE(m.maintenanceDate) = DATE(%s)
+            WHERE u.Role = 'maintenance'
+              AND m.logID IS NULL
+            ORDER BY u.userID
+            LIMIT 1
             """
 
-            busy_workers_query = """
-            SELECT COUNT(DISTINCT userID) AS busy_workers
-            FROM MaintenanceLog
-            WHERE DATE(maintenanceDate) = DATE(%s)
-            """
-
-            total_workers_row = self.db.fetch_one(total_workers_query)
-            busy_workers_row = self.db.fetch_one(busy_workers_query, (db_date,))
-
-            total_workers = total_workers_row.get("total_workers", 0) if total_workers_row else 0
-            busy_workers = busy_workers_row.get("busy_workers", 0) if busy_workers_row else 0
-
-            # In dev/test data there may be zero maintenance users; allow booking
-            # instead of blocking every date with a false "all workers busy" state.
-            if total_workers > 0 and busy_workers >= total_workers:
+            available_worker_row = self.db.fetch_one(available_worker_query, (db_date,))
+            if not available_worker_row:
                 messagebox.showerror(
                     "No Workers Available",
-                    "All maintenance workers already have a job that day. Please pick another date."
+                    "No maintenance worker is available that day. Please pick another date."
                 )
                 return
+
+            assigned_worker_id = available_worker_row["userID"]
 
             Repair.log_maintenance(
                 self.db,
                 apartment_id,
-                None,
+                assigned_worker_id,
                 db_date,
                 issue,
                 priority,

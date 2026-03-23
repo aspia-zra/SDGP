@@ -12,8 +12,8 @@ class Database:
             database="SDGPDUMP"
         )
 
-        # dictionary=True so rows return as {"column": value}
-        self.cursor = self.conn.cursor(dictionary=True)
+        # Buffered cursor prevents "Unread result found" across back-to-back queries.
+        self.cursor = self.conn.cursor(dictionary=True, buffered=True)
 
     def execute(self, query, values=None):
         self.cursor.execute(query, values)
@@ -21,7 +21,10 @@ class Database:
 
     def fetch_one(self, query, values=None):
         self.cursor.execute(query, values)
-        return self.cursor.fetchone()
+        row = self.cursor.fetchone()
+        # Drain any remaining rows so the next execute never sees unread results.
+        self.cursor.fetchall()
+        return row
 
     def fetch_all(self, query, values=None):
         self.cursor.execute(query, values)
