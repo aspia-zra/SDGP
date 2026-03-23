@@ -2,7 +2,7 @@
 
 ## IMPLEMENTATION
 
-hey, azra here,
+hey, azra here, there's a new sql dump, it's on my branch, not the main branch. u can call if u have questions.
 
 
 Write here what dashboards are complete and ready to merge to main before testing:
