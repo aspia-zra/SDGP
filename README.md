@@ -7,10 +7,10 @@ hey, azra here,
 
 Write here what dashboards are complete and ready to merge to main before testing:
 - maintenance dash (azra)
+- management dash (azra - merged with imaan's admin dash)
 
 
 Incomplete dashboards and status:
-- management dash (azra: front end done)
 - admin dash (imaan: front end done)
 - tenant dash (khanh: idk)
 - drashtis dash (idk)
