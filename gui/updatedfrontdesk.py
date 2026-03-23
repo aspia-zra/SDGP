@@ -82,7 +82,7 @@ class FrontDeskGUI(ctk.CTkFrame):
     def View_tenants(self):
         card = ctk.CTkFrame(
             self.scrollFrame,
-            fg_color="white",  # Make the card background white
+            fg_color="white", 
             corner_radius=12
         )
         card.grid(row=1, column=0, sticky="ew", pady=10)
@@ -97,11 +97,10 @@ class FrontDeskGUI(ctk.CTkFrame):
         headers = ["ID", "Name", "Phone", "NI", "Email", "Created At", "Status"]
         tenants = self.backend.get_all_tenants()
 
-        # Make columns expand evenly
         for i in range(len(headers)):
             card.grid_columnconfigure(i, weight=1)
 
-        # Header row
+        
         for i, h in enumerate(headers):
             ctk.CTkLabel(
                 card,
@@ -111,12 +110,12 @@ class FrontDeskGUI(ctk.CTkFrame):
                 fg_color=SECONDARY,     
                 corner_radius=0,
                 padx=5, pady=5
-            ).grid(row=2, column=i, sticky="nsew")  # header at row 2
+            ).grid(row=2, column=i, sticky="nsew")  
 
-        # Data rows
+       
         for r, tenant in enumerate(tenants, start=3):
             for c, val in enumerate(tenant.values()):
-                bg_color = "white" if r % 2 == 0 else "#f2f2f2"  # alternating white/very light gray
+                bg_color = "white" if r % 2 == 0 else "#f2f2f2"  
                 ctk.CTkLabel(
                     card,
                     text=val,
@@ -155,16 +154,15 @@ class FrontDeskGUI(ctk.CTkFrame):
         self.result_frame.grid(row=5, column=0, sticky="nsew", padx=5, pady=5)
     
     def search(self):
-        # Clear previous results
         for w in self.result_frame.winfo_children():
             w.destroy()
 
         term = self.search_entry.get().strip()
-        tenants = self.backend.get_all_tenants()  # make sure this matches your other code
+        tenants = self.backend.get_all_tenants()  
         found = False
 
         for tenant in tenants:
-            name = tenant.get("fullName", "")  # adjust key to your dict
+            name = tenant.get("fullName", "") 
             email = tenant.get("Email", "")
             phone = tenant.get("Phone", "")
 
@@ -173,8 +171,8 @@ class FrontDeskGUI(ctk.CTkFrame):
                     self.result_frame,
                     text=f"{name} — {phone} — {email}",
                     font=BODY_FONT,
-                    text_color="black",   # or TEXT_PRIMARY
-                    fg_color="white"      # or SURFACE if you want dark bg
+                    text_color="black",  
+                    fg_color="white"      
                 ).grid(sticky="w", pady=2)
                 found = True
 
