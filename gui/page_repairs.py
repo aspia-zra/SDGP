@@ -72,19 +72,14 @@ class RepairsPage(ctk.CTkFrame):
         complaints_page.pack(fill="both", expand=True)
 
     def open_settings(self):
-        try:
-            from . import settings
-        except ImportError:
-            import tkinter.messagebox as messagebox
-            messagebox.showinfo("Settings", "Settings are not available yet.")
+        host = self.winfo_toplevel()
+        navigate = getattr(host, "open_settings", None)
+
+        if callable(navigate):
+            navigate()
             return
 
-        host = self.winfo_toplevel()
-
-        for widget in host.winfo_children():
-            widget.destroy()
-
-        settings.settings(host)
+        messagebox.showinfo("Settings", "Settings are not available yet.")
 
 
     def create_widgets(self):
@@ -107,53 +102,52 @@ class RepairsPage(ctk.CTkFrame):
 
         # form components
         # issue
-        ctk.CTkLabel(form, text="Issue / Notes", font=theme.BODY_FONT).grid(
+        ctk.CTkLabel(form, text="Repair Reason", font=theme.BODY_FONT).grid(
             row=0, column=0, padx=20, pady=15, sticky="e"
         )
 
         self.issue_entry = ctk.CTkEntry(form, height=40)
         self.issue_entry.grid(row=0, column=1, padx=20, pady=15, sticky="ew")
 
-        # apartment
-        ctk.CTkLabel(form, text="Apartment ID", font=theme.BODY_FONT).grid(
-            row=1, column=0, padx=20, pady=15, sticky="e"
+        # repair details
+        ctk.CTkLabel(form, text="Repair Details", font=theme.BODY_FONT).grid(
+            row=1, column=0, padx=20, pady=15, sticky="ne"
         )
 
-        self.apartment_entry = ctk.CTkEntry(form, height=40)
-        self.apartment_entry.grid(row=1, column=1, padx=20, pady=15, sticky="ew")
+        self.details_entry = ctk.CTkTextbox(form, height=120)
+        self.details_entry.grid(row=1, column=1, padx=20, pady=15, sticky="ew")
 
-        # date
-        ctk.CTkLabel(form, text="Repair Date (YYYY-MM-DD)", font=theme.BODY_FONT).grid(
+        # apartment
+        ctk.CTkLabel(form, text="Apartment Number", font=theme.BODY_FONT).grid(
             row=2, column=0, padx=20, pady=15, sticky="e"
         )
 
+        self.apartment_entry = ctk.CTkEntry(form, height=40)
+        self.apartment_entry.grid(row=2, column=1, padx=20, pady=15, sticky="ew")
+
+        # date
+        ctk.CTkLabel(form, text="Repair Date (DD-MM-YY)", font=theme.BODY_FONT).grid(
+            row=3, column=0, padx=20, pady=15, sticky="e"
+        )
+
         self.date_entry = ctk.CTkEntry(form, height=40)
-        self.date_entry.grid(row=2, column=1, padx=20, pady=15, sticky="ew")
+        self.date_entry.grid(row=3, column=1, padx=20, pady=15, sticky="ew")
 
         # priority
         ctk.CTkLabel(form, text="Priority", font=theme.BODY_FONT).grid(
-            row=3, column=0, padx=20, pady=15, sticky="e"
+            row=4, column=0, padx=20, pady=15, sticky="e"
         )
 
         self.priority_box = ctk.CTkComboBox(
             form,
-            values=["Low", "Medium", "High"]
+            values=["1", "2", "3"]
         )
-        self.priority_box.grid(row=3, column=1, padx=20, pady=15, sticky="ew")
+        self.priority_box.grid(row=4, column=1, padx=20, pady=15, sticky="ew")
+        self.priority_box.set("2")
 
         # util
         button_frame = ctk.CTkFrame(self.container)
         button_frame.grid(row=2, column=0, pady=20)
-
-        ctk.CTkButton(
-            button_frame,
-            text="Display Cost",
-            fg_color=theme.PRIMARY,
-            hover_color=theme.PRIMARY_DARK,
-            text_color=theme.SURFACE,
-            height=45,
-            command=self.display_cost
-        ).grid(row=0, column=0, padx=20)
 
         ctk.CTkButton(
             button_frame,
@@ -163,77 +157,111 @@ class RepairsPage(ctk.CTkFrame):
             text_color=theme.SURFACE,
             height=45,
             command=self.book_repair
-        ).grid(row=0, column=1, padx=20)
+        ).grid(row=0, column=0, padx=20)
 
 # date error handling
 
     def valid_date(self, date_string):
+        parsed_date = self.parse_date(date_string)
 
-        try:
-            repair_date = datetime.strptime(date_string, "%Y-%m-%d").date()
-            today = datetime.today().date()
-
-            if repair_date < today:
-                return False
-
-            return True
-
-        except ValueError:
+        if parsed_date is None:
             return False
+
+        today = datetime.today().date()
+        return parsed_date >= today
+
+    def parse_date(self, date_string):
+        normalized = (date_string or "").strip().replace("/", "-")
+
+        for fmt in ("%d-%m-%y", "%d-%m-%Y"):
+            try:
+                return datetime.strptime(normalized, fmt).date()
+            except ValueError:
+                continue
+
+        return None
+
+    def to_db_date(self, date_string):
+        parsed_date = self.parse_date(date_string)
+        if parsed_date is None:
+            raise ValueError("Invalid date format")
+
+        return parsed_date.strftime("%Y-%m-%d")
 
     def display_cost(self):
 
-        apartment_id = self.apartment_entry.get().strip()
+        apartment_number = self.apartment_entry.get().strip()
 
+        if not apartment_number:
+            messagebox.showerror("Error", "Enter an apartment number first.")
+            return
+
+        apartment_id = Repair.get_apartment_id_by_number(self.db, apartment_number)
         if not apartment_id:
-            messagebox.showerror("Error", "Enter an apartment ID first.")
+            messagebox.showerror("Error", "Apartment number not found.")
             return
 
         cost = Repair.calculate_total_cost(self.db, apartment_id)
 
         messagebox.showinfo(
             "Estimated Cost",
-            f"Total maintenance cost for apartment {apartment_id}: £{cost}"
+            f"Total maintenance cost for apartment {apartment_number}: £{cost}"
         )
 
     def book_repair(self):
 
         issue = self.issue_entry.get().strip()
-        apartment_id = self.apartment_entry.get().strip()
+        repair_details = self.details_entry.get("1.0", "end").strip()
+        apartment_number = self.apartment_entry.get().strip()
         date = self.date_entry.get().strip()
         priority = self.priority_box.get()
 
-        if not issue or not apartment_id or not date:
+        if not issue or not repair_details or not apartment_number or not date:
             messagebox.showerror("Error", "Please fill in all fields.")
+            return
+
+        if priority not in {"1", "2", "3"}:
+            messagebox.showerror("Error", "Priority must be 1, 2, or 3.")
             return
 
         if not self.valid_date(date):
             messagebox.showerror(
                 "Invalid Date",
-                "Repair date cannot be in the past and must follow YYYY-MM-DD."
+                "Repair date cannot be in the past and must follow DD-MM-YY or DD-MM-YYYY."
             )
             return
 
         try:
+            apartment_id = Repair.get_apartment_id_by_number(self.db, apartment_number)
+            if not apartment_id:
+                messagebox.showerror("Error", "Apartment number not found.")
+                return
+
+            db_date = self.to_db_date(date)
 
             # Worker availability check (1 job per worker per day)
 
             total_workers_query = """
-            SELECT COUNT(*)
+            SELECT COUNT(*) AS total_workers
             FROM UserTbl
             WHERE Role = 'maintenance'
             """
 
             busy_workers_query = """
-            SELECT COUNT(DISTINCT userID)
+            SELECT COUNT(DISTINCT userID) AS busy_workers
             FROM MaintenanceLog
             WHERE DATE(maintenanceDate) = DATE(%s)
             """
 
-            total_workers = self.db.fetch_one(total_workers_query)[0]
-            busy_workers = self.db.fetch_one(busy_workers_query, (date,))[0]
+            total_workers_row = self.db.fetch_one(total_workers_query)
+            busy_workers_row = self.db.fetch_one(busy_workers_query, (db_date,))
 
-            if busy_workers >= total_workers:
+            total_workers = total_workers_row.get("total_workers", 0) if total_workers_row else 0
+            busy_workers = busy_workers_row.get("busy_workers", 0) if busy_workers_row else 0
+
+            # In dev/test data there may be zero maintenance users; allow booking
+            # instead of blocking every date with a false "all workers busy" state.
+            if total_workers > 0 and busy_workers >= total_workers:
                 messagebox.showerror(
                     "No Workers Available",
                     "All maintenance workers already have a job that day. Please pick another date."
@@ -244,7 +272,10 @@ class RepairsPage(ctk.CTkFrame):
                 self.db,
                 apartment_id,
                 None,
-                date
+                db_date,
+                issue,
+                priority,
+                repair_details,
             )
 
             # EMAIL PLACEHOLDER
@@ -263,6 +294,7 @@ class RepairsPage(ctk.CTkFrame):
     def clear_form(self):
 
         self.issue_entry.delete(0, "end")
+        self.details_entry.delete("1.0", "end")
         self.apartment_entry.delete(0, "end")
         self.date_entry.delete(0, "end")
-        self.priority_box.set("")
+        self.priority_box.set("2")

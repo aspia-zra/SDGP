@@ -4,50 +4,57 @@ from tkinter.ttk import Button, Entry
 import tkinter.messagebox as messagebox
 
 class Complaints:
-    def __init__(self):
-        self.db = Database()
+    def __init__(self, db=None):
+        self.db = db or Database()
 
     def get_tenantID(self, apartmentnumber):
+        apartment_query = "SELECT apartmentID FROM Apartment WHERE apartmentNumber = %s"
+        apartment_row = self.db.fetch_one(apartment_query, (apartmentnumber,))
+        if not apartment_row:
+            return None
 
-        cursor = self.db.cursor
-        conn = self.db.conn
+        lease_query = """
+        SELECT tenantID
+        FROM LeaseAgreement
+        WHERE apartmentID = %s AND Status = 'active'
+        """
+        lease_row = self.db.fetch_one(lease_query, (apartment_row["apartmentID"],))
+        if not lease_row:
+            return None
 
-
-        cursor.execute("SELECT apartmentID FROM apartments WHERE apartmentnumber = %s", (apartmentnumber,))
-        apartmentID = cursor.fetchone()
-        apartmentID = apartmentID['apartmentID']
-
-        cursor.execute("SELECT tenantID FROM leaseagreement WHERE apartmentID = %s AND Status = 'active'", (apartmentID,))
-        tenantID = cursor.fetchone()
-        tenantID = tenantID['tenantID']
-
-        conn.close()
-        return tenantID
+        return lease_row["tenantID"]
 
     def add_complaint(self, reason, severity, apartmentnumber, complaintdetail):
-        cursor = self.db.cursor
-        conn = self.db.conn
+        apartment_query = "SELECT apartmentID FROM Apartment WHERE apartmentNumber = %s"
+        apartment_row = self.db.fetch_one(apartment_query, (apartmentnumber,))
+        if not apartment_row:
+            return False
 
-
-        #collect apartment ID from apartment number to insert into complaints table
-        cursor.execute("SELECT apartmentID FROM apartments WHERE apartmentnumber = %s", (apartmentnumber,))
-        apartmentID = cursor.fetchone()
-        apartmentID = apartmentID['apartmentID']
-
-        #collect tenantID from leaseagreement table using apartmentID for the complaints table
-        cursor.execute("SELECT tenantID FROM leaseagreement WHERE apartmentID = %s AND Status = 'active'", (apartmentID,))
-        tenantID = cursor.fetchone()
-        tenantID = tenantID['tenantID']
-
-        #add all the information collected into the complaints table
+        lease_query = """
+        SELECT tenantID
+        FROM LeaseAgreement
+        WHERE apartmentID = %s AND Status = 'active'
+        """
+        lease_row = self.db.fetch_one(lease_query, (apartment_row["apartmentID"],))
+        if not lease_row:
+            return False
 
         timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
-        query = "INSERT INTO complaints (tenantID, apartmentID, complaintdetail, reason, timestamp, severity) VALUES (%s, %s, %s,%s, %s, %s)"
+        query = """
+        INSERT INTO Complaint (tenantID, apartmentID, Description, reportDate, Severity, Status)
+        VALUES (%s, %s, %s, %s, %s, 'open')
+        """
 
-        cursor.execute(query, (tenantID, apartmentID, complaintdetail, reason, timestamp, severity))
-        conn.commit()
-        conn.close()
+        encoded_description = (
+            f"[Reason] {(reason or '').strip()}\n"
+            f"[Details] {(complaintdetail or '').strip()}"
+        )
+
+        self.db.execute(
+            query,
+            (lease_row["tenantID"], apartment_row["apartmentID"], encoded_description, timestamp, severity),
+        )
         return True
 
     def submit_complaint(self):
@@ -62,16 +69,14 @@ class Complaints:
             self.get_complaint_history() #refreshes the table that shows 5 most recent complaints
 
     def get_recent_complaints(self, tenantID):
-        cursor = self.db.cursor
-        conn = self.db.conn
-
-
-        query = "SELECT reason, timestamp, severity, status FROM complaints WHERE tenantID = %s ORDER BY timestamp DESC LIMIT 5"
-        cursor.execute(query, (tenantID,))
-        complaints = cursor.fetchall()
-
-        conn.close()
-        return complaints
+        query = """
+        SELECT Description, reportDate, Severity, Status
+        FROM Complaint
+        WHERE tenantID = %s
+        ORDER BY reportDate DESC
+        LIMIT 5
+        """
+        return self.db.fetch_all(query, (tenantID,))
     
     def get_complaint_history(self):
         tenantID = self.get_tenantID(self.Entryapartmentnumber.get())
@@ -83,5 +88,8 @@ class Complaints:
 
         # Insert new data into the treeview
         for complaint in complaints:
-            reason, timestamp, severity, status = complaint
+            reason = complaint["Description"]
+            timestamp = complaint["reportDate"]
+            severity = complaint["Severity"]
+            status = complaint["Status"]
             self.tree.insert("", "end", values=(reason, timestamp, severity, status))

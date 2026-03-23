@@ -1,6 +1,4 @@
-import tkinter as tk
 import customtkinter as ctk
-from tkinter import ttk
 import tkinter.messagebox as messagebox
 from db.db_connect import Database
 from models.complaints import Complaints
@@ -11,8 +9,8 @@ class ComplaintsPage(ctk.CTkFrame):
     def __init__(self, parent, db=None):
         super().__init__(parent)
 
-        self.models = Complaints()
         self.db = db or Database()
+        self.models = Complaints(self.db)
         controller = getattr(self.winfo_toplevel(), "app_controller", self.winfo_toplevel())
 
         self.grid_columnconfigure(1, weight=1)
@@ -65,56 +63,30 @@ class ComplaintsPage(ctk.CTkFrame):
         complaints_page.pack(fill="both", expand=True)
 
     def open_settings(self):
-        try:
-            from . import settings
-        except ImportError:
-            import tkinter.messagebox as messagebox
-            messagebox.showinfo("Settings", "Settings are not available yet.")
+        host = self.winfo_toplevel()
+        navigate = getattr(host, "open_settings", None)
+
+        if callable(navigate):
+            navigate()
             return
 
-        host = self.winfo_toplevel()
-
-        for widget in host.winfo_children():
-            widget.destroy()
-
-        settings.settings(host)
+        messagebox.showinfo("Settings", "Settings are not available yet.")
 
     def submit_complaint(self):
         reason = self.Entrycomplaint.get()
         severity = self.severity.get()
         apartmentnumber = self.EntryAPID.get()
         complaintdetail = self.EntryComplaintDetails.get("1.0", "end")
+
+        if severity not in {"1", "2", "3"}:
+            messagebox.showerror("Error", "Severity must be 1, 2, or 3.")
+            return
         
         inserted = self.models.add_complaint(reason, severity, apartmentnumber, complaintdetail)
         if inserted:
             messagebox.showinfo("Success", "Complaint submitted successfully")
-            self.load_complaint_history()
-
-    def load_complaint_history(self):
-        # Get apartment number from the entry
-        apartmentnumber = self.EntryAPID.get()
-        # If no apartment number entered, do nothing yet
-        if not apartmentnumber:
-            return
-        # Get tenant ID from the model
-        tenantID = self.models.get_tenantID(apartmentnumber)
-        if not tenantID:
-            return
-
-        # Get complaints from the model
-        complaints = self.models.get_recent_complaints(tenantID)
-
-        # Clear the tree
-        for item in self.tree.get_children():
-            self.tree.delete(item)
-            
-        # Insert rows
-        for complaint in complaints:
-            reason = complaint["reason"]
-            timestamp = complaint["timestamp"]
-            severity = complaint["severity"]
-            status = complaint["status"]
-            self.tree.insert("", "end", values=(reason, timestamp, severity, status))
+        else:
+            messagebox.showerror("Error", "Could not submit complaint. Check apartment number and active lease.")
 
     
     def create_form(self):
@@ -135,8 +107,9 @@ class ComplaintsPage(ctk.CTkFrame):
         self.labelseverity = ctk.CTkLabel(self.form, text="Severity of Complaint:")
         self.labelseverity.grid(row = 2, column = 2, columnspan = 1, padx = 20, pady = 20, sticky = "ew")
 
-        self.severity = ctk.CTkOptionMenu(self.form, values=["1", "2", "3", "4", "5"])
+        self.severity = ctk.CTkSegmentedButton(self.form, values=["1", "2", "3"])
         self.severity.grid(row = 2, column = 3, columnspan = 1, padx = 20, pady = 20, sticky = "ew")
+        self.severity.set("2")
 
         #apartment Id entry
         self.labelAPID = ctk.CTkLabel(self.form, text="Apartment Number:") 
@@ -159,16 +132,3 @@ class ComplaintsPage(ctk.CTkFrame):
                        command=self.submit_complaint
                        )
         button.grid(row = 5, column = 3, columnspan = 1, padx = 20, pady = 20, sticky = "ew")
-
-        #complaint history
-        history_label = ctk.CTkLabel(self.form, text="Complaint History", font=theme.HEADING_FONT)
-        history_label.grid(row = 7, column = 2, columnspan = 2, padx = 20, pady = 20, sticky = "nsew")
-
-        columns = ("Complaint Number: ", "Report Date", "Severity", "Status")
-
-        self.tree = ttk.Treeview(self.form, columns=columns, show="headings")
-        for col in columns:
-            self.tree.heading(col, text=col)
-            self.tree.column(col, width=150, anchor="center")
-        self.tree.grid(row = 8, column = 2, columnspan = 2, padx = 20, pady = 20, sticky = "nsew")
-        self.load_complaint_history()
