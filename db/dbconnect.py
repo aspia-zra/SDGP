@@ -11,10 +11,6 @@ class Database:
         self.passwd = "Drashtisamgi02!"
 
         self.conn = self.get_connection()
-        # if self.conn:
-        #     print("Database connected successfully!")
-        # else:
-        #     print("Database connection failed!")
 
     def get_connection(self):
         try:
