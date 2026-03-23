@@ -14,19 +14,19 @@ class AssignApartmentPage(ctk.CTkFrame):
         self.nav = nav.navbar(self, parent)
         self.nav.grid(row=0, rowspan=4, column=0, sticky="ns")
 
-        # ===== GRID SETUP =====
+        #grid
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(0, weight=0)  # sidebar
         self.grid_columnconfigure(1, weight=1)  # main content
 
-        # ===== MAIN CONTENT AREA =====
+        #main content area
         self.main_frame = ctk.CTkFrame(self, fg_color=BACKGROUND)
         self.main_frame.grid(row=0, column=1, sticky="nsew", padx=25, pady=25)
 
         self.main_frame.grid_columnconfigure(0, weight=1)
         self.main_frame.grid_rowconfigure(1, weight=1)
 
-        # ===== TITLE =====
+        # title
         ctk.CTkLabel(
             self.main_frame,
             text="Assign Apartment",
@@ -34,7 +34,6 @@ class AssignApartmentPage(ctk.CTkFrame):
             text_color=PRIMARY
         ).grid(row=0, column=0, sticky="w", pady=(0, 20))
 
-        # ===== CARD =====
         card = ctk.CTkFrame(
             self.main_frame,
             fg_color=SURFACE,
@@ -48,7 +47,6 @@ class AssignApartmentPage(ctk.CTkFrame):
         card.grid_columnconfigure(0, weight=0)
         card.grid_columnconfigure(1, weight=1)
 
-        # ===== TENANT DROPDOWN =====
         ctk.CTkLabel(
             card,
             text="Select Tenant:",
@@ -73,7 +71,6 @@ class AssignApartmentPage(ctk.CTkFrame):
         )
         self.tenant_dropdown.grid(row=0, column=1, pady=20, padx=20, sticky="ew")
 
-        # ===== APARTMENT DROPDOWN =====
         ctk.CTkLabel(
             card,
             text="Select Apartment:",
@@ -98,7 +95,6 @@ class AssignApartmentPage(ctk.CTkFrame):
         )
         self.apartment_dropdown.grid(row=1, column=1, pady=20, padx=20, sticky="ew")
 
-        # ===== BUTTON =====
         ctk.CTkButton(
             card,
             text="Assign Apartment",
@@ -113,7 +109,6 @@ class AssignApartmentPage(ctk.CTkFrame):
 
         self.populate_dropdowns()
 
-    # ===== POPULATE DROPDOWNS =====
     def populate_dropdowns(self):
         try:
             tenants = self.model.get_all_tenants()
@@ -143,7 +138,6 @@ class AssignApartmentPage(ctk.CTkFrame):
         except Exception as e:
             messagebox.showerror("Error", f"Could not load apartments: {e}")
 
-    # ===== ASSIGN FUNCTION =====
     def assign_apartment(self):
         tenant_value = self.tenant_var.get()
         apartment_id = self.apartment_var.get()
