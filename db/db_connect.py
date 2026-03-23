@@ -9,7 +9,7 @@ class Database:
             host="localhost",
             user="root",
             password="Root123456!",
-            database="secondverparagonapartment"
+            database="SDGPDUMP"
         )
 
         # dictionary=True so rows return as {"column": value}

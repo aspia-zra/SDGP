@@ -46,87 +46,10 @@ class Repair:
         return value
 
     @staticmethod
-    def _encode_notes(issue, priority):
-        issue_text = (issue or "").strip()
-        priority_text = Repair._normalize_priority(priority)
-
-        if issue_text and priority_text:
-            return f"[Priority:{priority_text}] {issue_text}"
-
-        return issue_text or None
-
-    @staticmethod
-    def _decode_notes(notes):
-        if not notes:
-            return "-", None
-
-        def reason_only(value):
-            return (str(value or "-").splitlines()[0].strip() or "-")
-
-        text = str(notes).strip()
-        if text.startswith("[Priority:") and "]" in text:
-            closing = text.find("]")
-            priority = Repair._normalize_priority(text[len("[Priority:"):closing].strip())
-            issue = text[closing + 1:].strip() or "-"
-            marker = "[Resolution]"
-            if marker in issue:
-                issue = issue[:issue.find(marker)].rstrip() or "-"
-            return reason_only(issue), priority
-
-        marker = "[Resolution]"
-        if marker in text:
-            text = text[:text.find(marker)].rstrip() or "-"
-
-        return reason_only(text), None
-
-    @staticmethod
-    def _extract_resolution(notes):
-        if not notes:
-            return None
-
-        marker = "[Resolution]"
-        text = str(notes)
-        idx = text.find(marker)
-        if idx == -1:
-            return None
-
-        return text[idx + len(marker):].strip() or None
-
-    @staticmethod
-    def _merge_resolution(existing_notes, resolution):
-        base = (existing_notes or "").strip()
-        resolution_text = (resolution or "").strip()
-
-        if not resolution_text:
-            return base or None
-
-        marker = "[Resolution]"
-        if marker in base:
-            base = base[:base.find(marker)].rstrip()
-
-        if not base:
-            return f"{marker} {resolution_text}"
-
-        return f"{base}\n{marker} {resolution_text}"
-
-    @staticmethod
-    def _decode_complaint_description(description):
-        text = str(description or "").strip()
-        if not text:
-            return "-", "-"
-
-        reason_marker = "[Reason]"
-        details_marker = "[Details]"
-
-        if reason_marker in text and details_marker in text:
-            reason_start = text.find(reason_marker) + len(reason_marker)
-            details_start = text.find(details_marker)
-            reason = text[reason_start:details_start].strip() or "-"
-            details = text[details_start + len(details_marker):].strip() or "-"
-            return reason, details
-
-        reason = text.splitlines()[0].strip() if text else "-"
-        return reason or "-", text
+    def _decode_complaint_description(description, initial_issue=None):
+        reason = (str(description or "").strip() or "-")
+        details = (str(initial_issue or "").strip() or "-")
+        return reason, details
 
     def __init__(self, apartmentID, logID=None, userID=None, maintenanceDate=None, timeTaken=None, Cost=None, Notes=None):
         self.logID = logID
@@ -142,15 +65,15 @@ class Repair:
     def log_maintenance(db, apartmentID, userID, maintenanceDate, issue=None, priority=None, repair_details=None):
         query = """
         INSERT INTO MaintenanceLog
-        (apartmentID, userID, maintenanceDate, Priority, InitialIssue, RepairDetails, Notes)
-        VALUES (%s, %s, %s, %s, %s, %s, %s)
+        (apartmentID, userID, maintenanceDate, Priority, InitialIssue, RepairDetails)
+        VALUES (%s, %s, %s, %s, %s, %s)
         """
         normalized_priority = Repair._normalize_priority(priority) or "2"
         issue_text = (issue or "").strip() or None
         details_text = (repair_details or "").strip() or None
         db.execute(
             query,
-            (apartmentID, userID, maintenanceDate, normalized_priority, issue_text, details_text, details_text),
+            (apartmentID, userID, maintenanceDate, normalized_priority, issue_text, details_text),
         )
 
 
@@ -185,7 +108,7 @@ class Repair:
     def record_resolution(db, log_id, time_taken, cost, notes):
         query = """
         UPDATE MaintenanceLog
-        SET timeTaken=%s, Cost=%s, Notes=%s
+        SET timeTaken=%s, Cost=%s, FinalResolution=%s
         WHERE logID=%s
         """
         db.execute(query, (time_taken, cost, notes, log_id))
@@ -220,7 +143,7 @@ class Repair:
     @staticmethod
     def get_open_complaints(db):
         query = """
-        SELECT complaintID, apartmentID, Description, reportDate, Severity
+        SELECT complaintID, apartmentID, InitialIssue, Description, reportDate, Severity
         FROM Complaint
         WHERE Status = 'open'
         """
@@ -230,7 +153,7 @@ class Repair:
     @staticmethod
     def get_closed_complaints(db):
         query = """
-        SELECT complaintID, apartmentID, Description, reportDate, FinalResolution, Severity
+        SELECT complaintID, apartmentID, InitialIssue, Description, reportDate, FinalResolution, Severity
         FROM Complaint
         WHERE Status = 'closed'
         """
@@ -244,7 +167,7 @@ class Repair:
     @staticmethod
     def get_open_repairs(db):
         query = """
-        SELECT logID, apartmentID, userID, maintenanceDate, Priority, InitialIssue, RepairDetails, Notes
+        SELECT logID, apartmentID, userID, maintenanceDate, Priority, InitialIssue, RepairDetails
         FROM MaintenanceLog
         WHERE timeTaken IS NULL
         """
@@ -254,7 +177,7 @@ class Repair:
     @staticmethod
     def get_completed_repairs(db):
         query = """
-        SELECT logID, apartmentID, userID, maintenanceDate, Priority, InitialIssue, RepairDetails, FinalResolution, timeTaken, Cost, Notes
+        SELECT logID, apartmentID, userID, maintenanceDate, Priority, InitialIssue, RepairDetails, FinalResolution, timeTaken, Cost
         FROM MaintenanceLog
         WHERE timeTaken IS NOT NULL
         """
@@ -298,7 +221,7 @@ class Repair:
         requests = []
 
         for c in complaints:
-            complaint_reason, complaint_details = Repair._decode_complaint_description(c["Description"])
+            complaint_reason, complaint_details = Repair._decode_complaint_description(c["Description"], c.get("InitialIssue"))
             requests.append({
                 "id": c["complaintID"],
                 "type": "complaint",
@@ -314,16 +237,12 @@ class Repair:
             issue = (r.get("InitialIssue") or "").strip()
             priority = Repair._normalize_priority(r.get("Priority"))
 
-            if not issue:
-                issue, decoded_priority = Repair._decode_notes(r.get("Notes"))
-                priority = priority or decoded_priority
-
             requests.append({
                 "id": r["logID"],
                 "type": "repair",
                 "apartment": r["apartmentID"],
-                "issue": issue,
-                "repairDetails": (r.get("RepairDetails") or r.get("Notes") or "-").strip(),
+                "issue": issue or "-",
+                "repairDetails": (r.get("RepairDetails") or "-").strip(),
                 "date": Repair._format_date_only(r["maintenanceDate"]),
                 "worker": r["userID"],
                 "priority": Repair._normalize_priority(priority)
@@ -341,7 +260,7 @@ class Repair:
         requests = []
 
         for c in complaints:
-            complaint_reason, complaint_details = Repair._decode_complaint_description(c["Description"])
+            complaint_reason, complaint_details = Repair._decode_complaint_description(c["Description"], c.get("InitialIssue"))
             requests.append({
                 "id": c["complaintID"],
                 "type": "complaint",
@@ -360,21 +279,17 @@ class Repair:
             issue = (r.get("InitialIssue") or "").strip()
             priority = Repair._normalize_priority(r.get("Priority"))
 
-            if not issue:
-                issue, decoded_priority = Repair._decode_notes(r.get("Notes"))
-                priority = priority or decoded_priority
-
             requests.append({
                 "id": r["logID"],
                 "type": "repair",
                 "apartment": r["apartmentID"],
-                "issue": issue,
-                "repairDetails": (r.get("RepairDetails") or r.get("Notes") or "-").strip(),
+                "issue": issue or "-",
+                "repairDetails": (r.get("RepairDetails") or "-").strip(),
                 "date": Repair._format_date_only(r["maintenanceDate"]),
                 "priority": Repair._normalize_priority(priority),
                 "timeTaken": r["timeTaken"],
                 "cost": r["Cost"],
-                "resolution": (r.get("FinalResolution") or Repair._extract_resolution(r.get("Notes")) or "-").strip(),
+                "resolution": (r.get("FinalResolution") or "-").strip(),
                 "_sort_date": r["maintenanceDate"],
             })
 

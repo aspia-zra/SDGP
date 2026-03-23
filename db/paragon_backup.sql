@@ -184,7 +184,6 @@ CREATE TABLE `MaintenanceLog` (
   `FinalResolution` text,
   `timeTaken` int DEFAULT NULL,
   `Cost` decimal(10,2) DEFAULT NULL,
-  `Notes` text,
   PRIMARY KEY (`logID`),
   KEY `idx_maintenance_apartment` (`apartmentID`),
   KEY `idx_maintenance_worker` (`userID`),

@@ -42,18 +42,20 @@ class Complaints:
         timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
         query = """
-        INSERT INTO Complaint (tenantID, apartmentID, Description, reportDate, Severity, Status)
-        VALUES (%s, %s, %s, %s, %s, 'open')
+        INSERT INTO Complaint (tenantID, apartmentID, InitialIssue, Description, reportDate, Severity, Status)
+        VALUES (%s, %s, %s, %s, %s, %s, 'open')
         """
-
-        encoded_description = (
-            f"[Reason] {(reason or '').strip()}\n"
-            f"[Details] {(complaintdetail or '').strip()}"
-        )
 
         self.db.execute(
             query,
-            (lease_row["tenantID"], apartment_row["apartmentID"], encoded_description, timestamp, severity),
+            (
+                lease_row["tenantID"],
+                apartment_row["apartmentID"],
+                (complaintdetail or "").strip(),
+                (reason or "").strip(),
+                timestamp,
+                severity,
+            ),
         )
         return True
 
