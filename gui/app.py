@@ -4,11 +4,8 @@ from gui.navbar import navbar
 from db.dbconnect import Database
 from gui.theme import *
 from gui.updatedfrontdesk import FrontDeskGUI
-# from gui.page_complaints import ComplaintsPage  
-# from gui.page_repairs import RepairsPage
-# from gui.page_assign_apartment import AssignApartmentPage
 from models.front_desk import FrontDesk
-import re
+
 
 
 class App(ctk.CTk):
