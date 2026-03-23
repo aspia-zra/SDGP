@@ -12,11 +12,10 @@ class RepairsPage(ctk.CTkFrame):
         self.db = Database()
         self.controller = controller
 
-        # ===== PAGE LAYOUT =====
         self.grid_rowconfigure(0, weight=1)
-        self.grid_columnconfigure(0, weight=0)  # navbar
-        self.grid_columnconfigure(1, weight=0)  # actions
-        self.grid_columnconfigure(2, weight=1)  # main content
+        self.grid_columnconfigure(0, weight=0) 
+        self.grid_columnconfigure(1, weight=0)  
+        self.grid_columnconfigure(2, weight=1) 
 
         self.nav = nav.navbar(self, controller)
         self.nav.grid(row=0, column=0, sticky="ns")
@@ -24,7 +23,6 @@ class RepairsPage(ctk.CTkFrame):
         self.create_widgets()
 
     def create_widgets(self):
-        # ===== ACTION SIDEBAR =====
         sidebar = ctk.CTkFrame(
             self,
             width=240,
@@ -65,13 +63,11 @@ class RepairsPage(ctk.CTkFrame):
 
         sidebar.grid_columnconfigure(0, weight=1)
 
-        # ===== MAIN AREA =====
         self.main_area = ctk.CTkFrame(self, fg_color=BACKGROUND)
         self.main_area.grid(row=0, column=2, sticky="nsew", padx=20, pady=20)
         self.main_area.grid_columnconfigure(0, weight=1)
         self.main_area.grid_rowconfigure(1, weight=1)
 
-        # ===== PAGE TITLE =====
         ctk.CTkLabel(
             self.main_area,
             text="Maintenance Management",
@@ -79,7 +75,6 @@ class RepairsPage(ctk.CTkFrame):
             font=TITLE_FONT
         ).grid(row=0, column=0, sticky="w", pady=(0, 20))
 
-        # ===== FORM CARD =====
         form_card = ctk.CTkFrame(
             self.main_area,
             fg_color=SURFACE,
@@ -135,7 +130,6 @@ class RepairsPage(ctk.CTkFrame):
             text_color="white"
         ).grid(row=4, column=0, columnspan=2, pady=(20, 20))
 
-    # ===== BUTTON CALLBACKS =====
     def book_maintenance(self):
         apt = self.entries["Apartment ID"].get().strip()
         worker = self.entries["Worker ID"].get().strip()
