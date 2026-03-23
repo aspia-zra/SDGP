@@ -5,5 +5,5 @@ def getconnection():
         host="localhost",
         user="root",
         password="Root123456!",
-        database="secondverparagonapartment"
+        database="sdgpdump"
     )
