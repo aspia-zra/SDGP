@@ -1,4 +1,3 @@
-
 """ # methods: from use case (more methods)
     book maintenance visits
     check worker availability
@@ -22,7 +21,7 @@ calculatetotalcost()
 generatemaintenancereport()
 
 """
-from db.dbconnect import Database
+from db.dbconnect import *
 
 class Repair:
     def __init__(self, apartmentID, logID=None, userID=None, maintenanceDate=None, timeTaken=None, Cost=None, Notes=None):
@@ -33,6 +32,7 @@ class Repair:
          self.timeTaken = timeTaken
          self.Cost= Cost
          self.Notes= Notes
+         #db = cursor()
     
     @staticmethod  # it's the same as booking the maintenance too   
     def log_maintenance(db, apartmentID, userID, maintenanceDate):
