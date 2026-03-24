@@ -1,17 +1,14 @@
-from db.dbconnect import Database
+from db.dbconnect import *
 from datetime import datetime
 from tkinter.ttk import Button, Entry
 import tkinter.messagebox as messagebox
 
 class Complaints:
-    def __init__(self):
-        self.db = Database()
-
     def get_tenantID(self, apartmentnumber):
 
-        cursor = self.db.cursor
-        conn = self.db.conn
+        conn = get_connection()
 
+        cursor = conn.cursor()
 
         cursor.execute("SELECT apartmentID FROM apartments WHERE apartmentnumber = %s", (apartmentnumber,))
         apartmentID = cursor.fetchone()
@@ -25,21 +22,17 @@ class Complaints:
         return tenantID
 
     def add_complaint(self, reason, severity, apartmentnumber, complaintdetail):
-        cursor = self.db.cursor
-        conn = self.db.conn
+        conn = get_connection()
+        cursor = conn.cursor()
 
-
-        #collect apartment ID from apartment number to insert into complaints table
         cursor.execute("SELECT apartmentID FROM apartments WHERE apartmentnumber = %s", (apartmentnumber,))
         apartmentID = cursor.fetchone()
         apartmentID = apartmentID['apartmentID']
 
-        #collect tenantID from leaseagreement table using apartmentID for the complaints table
         cursor.execute("SELECT tenantID FROM leaseagreement WHERE apartmentID = %s AND Status = 'active'", (apartmentID,))
         tenantID = cursor.fetchone()
         tenantID = tenantID['tenantID']
 
-        #add all the information collected into the complaints table
 
         timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
@@ -62,10 +55,9 @@ class Complaints:
             self.get_complaint_history() #refreshes the table that shows 5 most recent complaints
 
     def get_recent_complaints(self, tenantID):
-        cursor = self.db.cursor
-        conn = self.db.conn
-
-
+        conn = get_connection()
+        cursor = conn.cursor()
+        
         query = "SELECT reason, timestamp, severity, status FROM complaints WHERE tenantID = %s ORDER BY timestamp DESC LIMIT 5"
         cursor.execute(query, (tenantID,))
         complaints = cursor.fetchall()
