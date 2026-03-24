@@ -100,7 +100,6 @@ class FrontDeskGUI(ctk.CTkFrame):
         for i in range(len(headers)):
             card.grid_columnconfigure(i, weight=1)
 
-        
         for i, h in enumerate(headers):
             ctk.CTkLabel(
                 card,
@@ -110,9 +109,8 @@ class FrontDeskGUI(ctk.CTkFrame):
                 fg_color=SECONDARY,     
                 corner_radius=0,
                 padx=5, pady=5
-            ).grid(row=2, column=i, sticky="nsew")  
+            ).grid(row=2, column=i, sticky="nsew") 
 
-       
         for r, tenant in enumerate(tenants, start=3):
             for c, val in enumerate(tenant.values()):
                 bg_color = "white" if r % 2 == 0 else "#f2f2f2"  
@@ -158,11 +156,11 @@ class FrontDeskGUI(ctk.CTkFrame):
             w.destroy()
 
         term = self.search_entry.get().strip()
-        tenants = self.backend.get_all_tenants()  
+        tenants = self.backend.get_all_tenants() 
         found = False
 
         for tenant in tenants:
-            name = tenant.get("fullName", "") 
+            name = tenant.get("fullName", "")  
             email = tenant.get("Email", "")
             phone = tenant.get("Phone", "")
 
@@ -171,7 +169,7 @@ class FrontDeskGUI(ctk.CTkFrame):
                     self.result_frame,
                     text=f"{name} — {phone} — {email}",
                     font=BODY_FONT,
-                    text_color="black",  
+                    text_color="black",   
                     fg_color="white"      
                 ).grid(sticky="w", pady=2)
                 found = True
