@@ -27,6 +27,7 @@ class navbar(ctk.CTkFrame):
         self.navbar.grid_rowconfigure(7, weight=1)
         self.navbar.grid_columnconfigure(0, weight=1)
 
+        #TITLE
         navtitle_label = ctk.CTkLabel(
             self.navbar, 
             text="Paragon Apartments", 
@@ -35,7 +36,7 @@ class navbar(ctk.CTkFrame):
             font=(TITLE_FONT, 20))
         navtitle_label.grid(row = 0, column = 0, padx = 20, pady = (20,40), sticky="w")
 
-        btnConfig = {
+        btnConfig = { # Styling for buttons here
             "fg_color": PRIMARY,
             "hover_color": PRIMARY_DARK,
             "text_color": SURFACE,
@@ -61,6 +62,13 @@ class navbar(ctk.CTkFrame):
             text="Assign Apartment", **btnConfig)
         assign_apartment.grid(row = 4, column = 0, padx = 20, pady = 20, sticky = "ew")
 
+        # settings_btn = ctk.CTkButton(
+        #       self.navbar,
+        #       command=self.open_settings,
+        #       text="Settings",
+        #       **btnConfig)
+        # settings_btn.grid(row=5, column=0, padx=20, pady=20, sticky="ew")
+
         logout = ctk.CTkButton(self.navbar, 
             fg_color=PRIMARY, 
             hover_color=DANGER, 
@@ -70,6 +78,7 @@ class navbar(ctk.CTkFrame):
     
     def clear_page(self):
         for widget in self.winfo_children():
+            # keep navbar, remove everything else
             if not isinstance(widget, navbar):
                 widget.destroy()
 
@@ -93,7 +102,10 @@ class navbar(ctk.CTkFrame):
         self.controller.current_page = AssignApartmentPage(self.controller, self.controller, self.model)
         self.controller.current_page.grid(row=0, column=0, sticky="nsew")
 
-    ##add login and settings
+    # def open_settings(self):
+    #     self.controller.clear_page()
+    #     self.controller.current_page = settings(self.controller)
+    #     self.controller.current_page.grid(row=0, column=0, sticky="nsew")
     
     def logoutbtn(self):
         UserTbl.logout()
