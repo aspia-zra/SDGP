@@ -2,7 +2,7 @@ import tkinter as tk
 import customtkinter as ctk
 from tkinter import ttk
 import tkinter.messagebox as messagebox
-from db.dbconnect import Database
+from db.dbconnect import *
 from models.complaints import Complaints
 import gui.navbar as nav
 from gui.theme import *
@@ -13,8 +13,6 @@ class ComplaintsPage(ctk.CTkFrame):
 
         self.controller = controller
         self.models = Complaints()
-
-        self.db = Database()
 
         self.grid_columnconfigure(1, weight=1)
         self.grid_rowconfigure(0, weight=1)
@@ -59,22 +57,24 @@ class ComplaintsPage(ctk.CTkFrame):
         self.form = ctk.CTkFrame(self, fg_color=BACKGROUND)
         self.form.grid(row=0, column=1, sticky="nsew")
         self.form.grid_columnconfigure(3, weight=1)
-
+        #form start
         title_label = ctk.CTkLabel(self.form, text="Complaints", text_color=TEXT_PRIMARY, font=TITLE_FONT)
         title_label.grid(row = 0, column = 2, columnspan = 2, padx = 20, pady = 20, sticky = "nsew")
-
+        # complaint reason
         self.labelcomplaint = ctk.CTkLabel(self.form,font=SUBHEADING_FONT, text_color=TEXT_PRIMARY, text="Complaint Reason:")
         self.labelcomplaint.grid(row = 1, column = 2, columnspan = 1, padx = 20, pady = 20, sticky = "ew")
 
         self.Entrycomplaint = ctk.CTkEntry(self.form,width=200, bg_color=SECONDARY, fg_color=SURFACE, placeholder_text="Enter Complaint Reason")
         self.Entrycomplaint.grid(row = 1, column = 3, columnspan = 1, padx = 20, pady = 20, sticky = "ew")
 
+        #severity of complaint
         self.labelseverity = ctk.CTkLabel(self.form, font=SUBHEADING_FONT, text_color=TEXT_PRIMARY, text="Severity of Complaint:")
         self.labelseverity.grid(row = 2, column = 2, columnspan = 1, padx = 20, pady = 20, sticky = "ew")
 
         self.severity = ctk.CTkOptionMenu(self.form, fg_color=PRIMARY,values=["1", "2", "3", "4", "5"])
         self.severity.grid(row = 2, column = 3, columnspan = 1, padx = 20, pady = 20, sticky = "ew")
 
+        #apartment Id entry
         self.labelAPID = ctk.CTkLabel(self.form,font=SUBHEADING_FONT, text_color=TEXT_PRIMARY, text="Apartment Number:") 
         self.labelAPID.grid(row = 3, column = 2, columnspan = 1, padx = 20, pady = 20, sticky = "ew")
 
@@ -95,6 +95,7 @@ class ComplaintsPage(ctk.CTkFrame):
                                )
         button.grid(row = 5, column = 3, columnspan = 1, padx = 20, pady = 20, sticky = "ew")
 
+        #complaint history
         history_label = ctk.CTkLabel(self.form, font=HEADING_FONT, text_color=TEXT_PRIMARY, text="Complaint History")
         history_label.grid(row = 7, column = 2, columnspan = 2, padx = 20, pady = 20, sticky = "nsew")
 
