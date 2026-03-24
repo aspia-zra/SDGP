@@ -1,7 +1,7 @@
 import customtkinter as ctk
 from tkinter import messagebox, simpledialog
 from models.repairs import Repair
-from db.dbconnect import Database
+from db.dbconnect import *
 from gui.theme import *
 import gui.navbar as nav
 
@@ -9,13 +9,12 @@ import gui.navbar as nav
 class RepairsPage(ctk.CTkFrame):
     def __init__(self, parent, controller):
         super().__init__(parent, fg_color=BACKGROUND)
-        self.db = Database()
         self.controller = controller
 
         self.grid_rowconfigure(0, weight=1)
-        self.grid_columnconfigure(0, weight=0) 
-        self.grid_columnconfigure(1, weight=0)  
-        self.grid_columnconfigure(2, weight=1) 
+        self.grid_columnconfigure(0, weight=0)  # navbar
+        self.grid_columnconfigure(1, weight=0)  # actions
+        self.grid_columnconfigure(2, weight=1)  # main content
 
         self.nav = nav.navbar(self, controller)
         self.nav.grid(row=0, column=0, sticky="ns")
