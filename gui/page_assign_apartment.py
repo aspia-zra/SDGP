@@ -14,19 +14,16 @@ class AssignApartmentPage(ctk.CTkFrame):
         self.nav = nav.navbar(self, parent)
         self.nav.grid(row=0, rowspan=4, column=0, sticky="ns")
 
-        #grid
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(0, weight=0)  # sidebar
         self.grid_columnconfigure(1, weight=1)  # main content
 
-        #main content area
         self.main_frame = ctk.CTkFrame(self, fg_color=BACKGROUND)
         self.main_frame.grid(row=0, column=1, sticky="nsew", padx=25, pady=25)
 
         self.main_frame.grid_columnconfigure(0, weight=1)
         self.main_frame.grid_rowconfigure(1, weight=1)
 
-        # title
         ctk.CTkLabel(
             self.main_frame,
             text="Assign Apartment",
