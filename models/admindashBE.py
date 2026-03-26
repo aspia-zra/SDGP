@@ -59,7 +59,12 @@ class adminBE():# values = ["All Roles", "Front-desk Staff", "Maintenance", "Fin
             LEFT JOIN Tenant t ON t.tenantID = la.tenantID
             LEFT JOIN UserTbl u ON u.userID = t.userID
             JOIN Location l ON l.locationID = a.locationID
-            ORDER BY a.apartmentNumber ASC""")
+            ORDER BY 
+                CASE 
+                    WHEN la.endDate IS NULL THEN 1 
+                    ELSE 0 
+                END,
+                la.endDate ASC""")
         tableContents = cursor.fetchall()
 
         cursor.close()
