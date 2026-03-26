@@ -26,7 +26,8 @@ class FrontDesk:
     def get_all_tenants(self):
         conn = get_connection()
         cursor = conn.cursor(dictionary=True) 
-        query = "SELECT * FROM tenant"
+        query = ("""SELECT t.tenantID, u.fullName, u.Phone, t.national_Insurance, t.Email, u.Created_at, t.status 
+            FROM Tenant t JOIN UserTbl u ON t.userID = u.userID""")
         cursor.execute(query)
         tenants = cursor.fetchall()
         cursor.close()
@@ -35,7 +36,7 @@ class FrontDesk:
     def get_tenant_by_id(self, tenant_id):
         conn = get_connection()
         cursor = conn.cursor()
-        cursor.execute("SELECT * FROM tenant WHERE tenantID = %s", (tenant_id,))
+        cursor.execute("""SELECT * FROM tenant WHERE t.tenantID=%s""", (tenant_id,))
         tenant = cursor.fetchone()
         cursor.close()
         return tenant
@@ -73,7 +74,7 @@ class FrontDesk:
     def get_all_apartments(self):
         conn = get_connection()
         cursor = conn.cursor(dictionary=True)
-        cursor.execute("SELECT apartmentNumber FROM apartment WHERE status='available'")
-        apartments = [row['apartmentNumber'] for row in cursor.fetchall()]
+        cursor.execute("SELECT apartmentID FROM apartment WHERE status='available'")
+        apartments = [row['apartmentID'] for row in cursor.fetchall()]
         cursor.close()
         return apartments
