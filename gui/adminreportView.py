@@ -35,8 +35,8 @@ class ReportsView(ctk.CTkFrame):
             self,
             fg_color=theme.BACKGROUND,
             segmented_button_fg_color=theme.SURFACE,
-            segmented_button_selected_color=theme.PRIMARY,
-            segmented_button_selected_hover_color=theme.PRIMARY_DARK,
+            segmented_button_selected_color=theme.PRIMARY_LIGHT,
+            segmented_button_selected_hover_color=theme.SECONDARY,
             segmented_button_unselected_color=theme.SURFACE,
             text_color=theme.TEXT_PRIMARY
         )
