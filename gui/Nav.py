@@ -2,7 +2,7 @@ from tkinter import *
 import matplotlib
 import customtkinter as ctk
 
-from GUI import Admindash, adminreportView, settings, updatedfrontdesk
+from GUI import Admindash, adminreportView, settings, updatedfrontdesk, finance_view
 from GUI.pages_mngdash import mngdashboard
 from Models import user_session
 from . import theme
@@ -169,7 +169,7 @@ class navbar(ctk.CTkFrame):
 
     def open_financedash(self): 
         self.controller.clear_page()
-        self.controller.current_page = Admindash.admindashboard(self.controller)
+        self.controller.current_page = finance_view.FinanceView(self.controller, self.controller)
         self.controller.current_page.grid(row=0, column=0, sticky="nsew")
 
     def open_frontdash(self):
