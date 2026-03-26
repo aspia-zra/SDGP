@@ -1,5 +1,6 @@
 #Separate python file for logging in and out
 from passlib.hash import sha256_crypt
+import bcrypt
 from . import dbfunc
 from . import user_session
 
@@ -70,6 +71,29 @@ def changePhone(new_phone):
     else:
         print('DBFunc error')
 
+def _verify_password(password, stored_password):
+        if stored_password is None:
+            return False, False
+
+        # Normalize DB value to text safely.
+        if isinstance(stored_password, bytes):
+            try:
+                stored_password = stored_password.decode()
+            except Exception:
+                return False, False
+        elif not isinstance(stored_password, str):
+            stored_password = str(stored_password)
+
+        # If it looks like a bcrypt hash, verify with bcrypt.
+        if stored_password.startswith("$2a$") or stored_password.startswith("$2b$") or stored_password.startswith("$2y$"):
+            try:
+                return bcrypt.checkpw(password.encode(), stored_password.encode()), False
+            except Exception:
+                return False, False
+
+        # Backward-compatibility for old plaintext rows.
+        return password == stored_password, True
+
 def changePassword(new_password, current_password):
     conn = dbfunc.getconnection()
     cursor = conn.cursor()
@@ -77,7 +101,9 @@ def changePassword(new_password, current_password):
     rows = cursor.fetchone()
     if rows:
         rpassword = rows[0]
-        if current_password != rpassword: # Checks current password in DB before allowing change
+        password_correct, was_plaintext = _verify_password(current_password, rpassword)
+
+        if not password_correct: 
             return "Current password incorrect, try again"
         
         if len(new_password) < 8:
@@ -86,10 +112,10 @@ def changePassword(new_password, current_password):
         if any(char.isdigit() for char in new_password) == False:
             return "New password must include a number"
     
-        #hashednew_password = sha256_crypt.hash((str(new_password))) 
-
+        hashednew_password = bcrypt.hashpw(new_password.encode(), bcrypt.gensalt())
+        
         cursor.execute("UPDATE UserTbl SET Password=%s WHERE userID=%s" 
-            ,(new_password, user_session.current_user_id))
+            ,(hashednew_password, user_session.current_user_id))
         conn.commit()
     
         cursor.execute("SELECT fullName FROM UserTbl WHERE userID = %s", (user_session.current_user_id,))
