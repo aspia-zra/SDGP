@@ -73,7 +73,7 @@ class ReportModel:
         cursor.execute('''
             SELECT ml.logID, a.apartmentNumber,
                    ml.maintenanceDate, ml.timeTaken,
-                   ml.Cost, COALESCE(ml.Notes, "")
+                   ml.Cost, COALESCE(ml.RepairDetails, "")
             FROM MaintenanceLog ml
             JOIN Apartment a
                 ON ml.apartmentID = a.apartmentID
