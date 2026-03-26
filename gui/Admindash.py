@@ -7,6 +7,7 @@ import GUI.theme as theme
 from datetime import datetime
 from . import nav
 from Models.admindashBE import adminBE
+from Models import user_session
 
 
 class admindashboard(ctk.CTkFrame):
@@ -18,7 +19,7 @@ class admindashboard(ctk.CTkFrame):
         self.grid_columnconfigure(1, weight=1)
         self.grid_rowconfigure(1, weight=1)
 
-        self.nav = nav.navbar(self, parent)
+        self.nav = nav.navbar(self, parent, mode=user_session.user_type.lower())
         self.nav.grid(row=0, rowspan=2, column=0, sticky="ns")
 
         self._create_header()
@@ -405,10 +406,52 @@ class admindashboard(ctk.CTkFrame):
         Email = self.addEmailEntry.get().strip()
         Password = self.addPassEntry.get().strip()
         Role = self.addRoleEntry.get().strip()
+        roles = ["manager","admin","finance","maintenance","frontdesk"]
 
         if not all([fullName, Phone, Email, Password, Role]):
             self.labelFrame.pack(fill="x", padx=15, pady=10)
             self.labelBanner.configure(text="Please fill all fields.", 
+                fg_color=theme.DANGER)
+            self.after(3000, lambda: self.labelFrame.pack_forget())
+            return
+
+        if len(Phone) < 11:
+            self.labelFrame.pack(fill="x", padx=15, pady=10)
+            self.labelBanner.configure(text="Must input a valid phone number.", 
+                fg_color=theme.DANGER)
+            self.after(3000, lambda: self.labelFrame.pack_forget())
+            return
+        
+        if "@" not in Email or "." not in Email:
+            self.labelFrame.pack(fill="x", padx=15, pady=10)
+            self.labelBanner.configure(text="Must enter a valid email", 
+                fg_color=theme.DANGER)
+            self.after(3000, lambda: self.labelFrame.pack_forget())
+            return
+        
+        if Role not in roles:
+            self.labelFrame.pack(fill="x", padx=15, pady=10)
+            self.labelBanner.configure(text="Must input a valid role.", 
+                fg_color=theme.DANGER)
+            self.after(3000, lambda: self.labelFrame.pack_forget())
+            return
+        
+        if len(Password) < 8:
+            self.labelFrame.pack(fill="x", padx=15, pady=10)
+            self.labelBanner.configure(text="Password must be atleast 8 characters long.", 
+                fg_color=theme.DANGER)
+            self.after(3000, lambda: self.labelFrame.pack_forget())
+            return
+        if not any(char.isdigit() for char in Password):
+            self.labelFrame.pack(fill="x", padx=15, pady=10)
+            self.labelBanner.configure(text="Password must be contain a digit.", 
+                fg_color=theme.DANGER)
+            self.after(3000, lambda: self.labelFrame.pack_forget())
+            return
+        
+        if not any(char.isalpha() for char in Password):
+            self.labelFrame.pack(fill="x", padx=15, pady=10)
+            self.labelBanner.configure(text="Password must be contain a letter.", 
                 fg_color=theme.DANGER)
             self.after(3000, lambda: self.labelFrame.pack_forget())
             return
@@ -469,10 +512,32 @@ class admindashboard(ctk.CTkFrame):
         Phone = self.editPhoneEntry.get().strip()
         Email = self.editEmailEntry.get().strip()
         Role = self.editRoleEntry.get().strip()
+        roles = ["manager","admin","finance","maintenance","frontdesk"]
 
         if not all([fullName, Phone, Email, Role]):
             self.labelFrame.pack(fill="x", padx=15, pady=10)
             self.labelBanner.configure(text="Please fill all fields.", fg_color=theme.DANGER)
+            self.after(3000, lambda: self.labelFrame.pack_forget())
+            return
+        
+        if len(Phone) < 11:
+            self.labelFrame.pack(fill="x", padx=15, pady=10)
+            self.labelBanner.configure(text="Must input a valid phone number.", 
+                fg_color=theme.DANGER)
+            self.after(3000, lambda: self.labelFrame.pack_forget())
+            return
+        
+        if "@" not in Email or "." not in Email:
+            self.labelFrame.pack(fill="x", padx=15, pady=10)
+            self.labelBanner.configure(text="Must enter a valid email", 
+                fg_color=theme.DANGER)
+            self.after(3000, lambda: self.labelFrame.pack_forget())
+            return
+        
+        if Role not in roles:
+            self.labelFrame.pack(fill="x", padx=15, pady=10)
+            self.labelBanner.configure(text="Must input a valid role.", 
+                fg_color=theme.DANGER)
             self.after(3000, lambda: self.labelFrame.pack_forget())
             return
 
