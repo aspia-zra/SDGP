@@ -8,9 +8,10 @@ class Complaints:
 
         conn = get_connection()
 
-        cursor = conn.cursor()
+        cursor = conn.cursor(dictionary=True)
 
-        cursor.execute("SELECT apartmentID FROM apartments WHERE apartmentnumber = %s", (apartmentnumber,))
+
+        cursor.execute("SELECT apartmentID FROM apartment WHERE apartmentNumber = %s", (apartmentnumber,))
         apartmentID = cursor.fetchone()
         apartmentID = apartmentID['apartmentID']
 
@@ -21,24 +22,19 @@ class Complaints:
         conn.close()
         return tenantID
 
-    def add_complaint(self, reason, severity, apartmentnumber, complaintdetail):
+    def add_complaint(self, reason, severity, apartmentnumber, complaintdetail, tenantID):
         conn = get_connection()
-        cursor = conn.cursor()
+        cursor = conn.cursor(dictionary=True)
 
-        cursor.execute("SELECT apartmentID FROM apartments WHERE apartmentnumber = %s", (apartmentnumber,))
+        cursor.execute("SELECT apartmentID FROM apartment WHERE apartmentNumber = %s", (apartmentnumber,))
         apartmentID = cursor.fetchone()
         apartmentID = apartmentID['apartmentID']
 
-        cursor.execute("SELECT tenantID FROM leaseagreement WHERE apartmentID = %s AND Status = 'active'", (apartmentID,))
-        tenantID = cursor.fetchone()
-        tenantID = tenantID['tenantID']
-
-
         timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
-        query = "INSERT INTO complaints (tenantID, apartmentID, complaintdetail, reason, timestamp, severity) VALUES (%s, %s, %s,%s, %s, %s)"
+        query = "INSERT INTO complaint (tenantID, apartmentID, Description, ReportDate, severity) VALUES (%s, %s, %s,%s, %s)"
 
-        cursor.execute(query, (tenantID, apartmentID, complaintdetail, reason, timestamp, severity))
+        cursor.execute(query, (tenantID, apartmentID, complaintdetail, timestamp, severity))
         conn.commit()
         conn.close()
         return True
@@ -58,22 +54,22 @@ class Complaints:
         conn = get_connection()
         cursor = conn.cursor()
         
-        query = "SELECT reason, timestamp, severity, status FROM complaints WHERE tenantID = %s ORDER BY timestamp DESC LIMIT 5"
+        query = "SELECT Description, timestamp, severity, status FROM complaint WHERE tenantID = %s ORDER BY timestamp DESC LIMIT 5"
         cursor.execute(query, (tenantID,))
         complaints = cursor.fetchall()
 
         conn.close()
         return complaints
     
-    def get_complaint_history(self):
-        tenantID = self.get_tenantID(self.Entryapartmentnumber.get())
-        complaints = self.get_recent_complaints(tenantID)
+    # def get_complaint_history(self):
+    #     tenantID = self.get_tenantID(self.Entryapartmentnumber.get())
+    #     complaints = self.get_recent_complaints(tenantID)
 
-        # Clear existing data in the treeview
-        for item in self.tree.get_children():
-            self.tree.delete(item)
+    #     # Clear existing data in the treeview
+    #     for item in self.tree.get_children():
+    #         self.tree.delete(item)
 
-        # Insert new data into the treeview
-        for complaint in complaints:
-            reason, timestamp, severity, status = complaint
-            self.tree.insert("", "end", values=(reason, timestamp, severity, status))
+    #     # Insert new data into the treeview
+    #     for complaint in complaints:
+    #         reason, timestamp, severity, status = complaint
+    #         self.tree.insert("", "end", values=(reason, timestamp, severity, status))
