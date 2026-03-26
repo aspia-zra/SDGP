@@ -3,7 +3,10 @@ from tkinter import font, ttk
 from gui.theme import *
 from datetime import datetime
 from models.front_desk import FrontDesk
+from gui import page_assign_apartment
 import gui.navbar as nav
+from gui import page_complaints
+from gui import page_repairs
 
 class FrontDeskGUI(ctk.CTkFrame):
 
@@ -18,7 +21,7 @@ class FrontDeskGUI(ctk.CTkFrame):
         self.grid_columnconfigure(1, weight=1)
         self.grid_rowconfigure(1, weight=1)
 
-        self.nav = nav.navbar(self, parent)
+        self.nav = nav.navbar(self, parent, mode=user_session.user_type.lower())
         self.nav.grid(row=0, rowspan=2, column=0, sticky="ns")
 
         self._create_header()
@@ -82,7 +85,7 @@ class FrontDeskGUI(ctk.CTkFrame):
     def View_tenants(self):
         card = ctk.CTkFrame(
             self.scrollFrame,
-            fg_color="white", 
+            fg_color="white",  # Make the card background white
             corner_radius=12
         )
         card.grid(row=1, column=0, sticky="ew", pady=10)
@@ -97,9 +100,11 @@ class FrontDeskGUI(ctk.CTkFrame):
         headers = ["ID", "Name", "Phone", "NI", "Email", "Created At", "Status"]
         tenants = self.backend.get_all_tenants()
 
+        # Make columns expand evenly
         for i in range(len(headers)):
             card.grid_columnconfigure(i, weight=1)
 
+        # Header row
         for i, h in enumerate(headers):
             ctk.CTkLabel(
                 card,
@@ -109,11 +114,12 @@ class FrontDeskGUI(ctk.CTkFrame):
                 fg_color=SECONDARY,     
                 corner_radius=0,
                 padx=5, pady=5
-            ).grid(row=2, column=i, sticky="nsew") 
+            ).grid(row=2, column=i, sticky="nsew")  # header at row 2
 
+        # Data rows
         for r, tenant in enumerate(tenants, start=3):
             for c, val in enumerate(tenant.values()):
-                bg_color = "white" if r % 2 == 0 else "#f2f2f2"  
+                bg_color = "white" if r % 2 == 0 else "#f2f2f2"  # alternating white/very light gray
                 ctk.CTkLabel(
                     card,
                     text=val,
@@ -152,15 +158,16 @@ class FrontDeskGUI(ctk.CTkFrame):
         self.result_frame.grid(row=5, column=0, sticky="nsew", padx=5, pady=5)
     
     def search(self):
+        # Clear previous results
         for w in self.result_frame.winfo_children():
             w.destroy()
 
         term = self.search_entry.get().strip()
-        tenants = self.backend.get_all_tenants() 
+        tenants = self.backend.get_all_tenants()  # make sure this matches your other code
         found = False
 
         for tenant in tenants:
-            name = tenant.get("fullName", "")  
+            name = tenant.get("fullName", "")  # adjust key to your dict
             email = tenant.get("Email", "")
             phone = tenant.get("Phone", "")
 
@@ -169,8 +176,8 @@ class FrontDeskGUI(ctk.CTkFrame):
                     self.result_frame,
                     text=f"{name} — {phone} — {email}",
                     font=BODY_FONT,
-                    text_color="black",   
-                    fg_color="white"      
+                    text_color="black",   # or TEXT_PRIMARY
+                    fg_color="white"      # or SURFACE if you want dark bg
                 ).grid(sticky="w", pady=2)
                 found = True
 
@@ -194,6 +201,46 @@ class FrontDeskGUI(ctk.CTkFrame):
             except Exception as e:
                 messagebox.showerror("Error", str(e))
 
+    def QuickActions(self):
+
+        card = ctk.CTkFrame(
+            self.scrollFrame,
+            fg_color=SURFACE,
+            corner_radius=12
+        )
+        card.grid(row=3, column = 0, sticky='ew', pady=10)
+
+        ctk.CTkLabel(
+            card,
+            text = "Quick Actions",
+            font= HEADING_FONT,
+            text_color=PRIMARY
+        ).pack(anchor="w", padx=15,pady=(15,10))
+
+        btnFrame = ctk.CTkFrame(card, fg_color="transparent")
+        btnFrame.pack(padx=15, pady=10)
+
+        ctk.CTkButton(
+            btnFrame,
+            text = "Assign Apartment",
+            fg_color=PRIMARY,
+            command = self.open_assignApt
+        ).grid(row=0,column=0,padx=10)
+
+        ctk.CTkButton(
+            btnFrame,
+            text = "Complaints",
+            fg_color=PRIMARY,
+            command = self.open_complaints
+        ).grid(row=0,column=0,padx=10)
+
+        ctk.CTkButton(
+            btnFrame,
+            text = "Repairs",
+            fg_color=PRIMARY,
+            command = self.open_repairs
+        ).grid(row=0,column=0,padx=10)
+
     def refresh(self):
         for widget in self.scrollFrame.winfo_children():
             widget.destroy()
@@ -202,4 +249,21 @@ class FrontDeskGUI(ctk.CTkFrame):
         self.View_tenants()
         self.Search_tenants()
 
+        print("Dashboard refreshed at:", datetime.now().strftime("%H:%M:%S"))
+
+    
+    def open_assignApt(self):
+        self.controller.clear_page()
+        self.controller.current_page = page_assign_apartment.AssignApartmentPage(self.controller)
+        self.controller.current_page.grid(row=0, column=0, sticky="nsew")
+    
+    def open_complaints(self):
+        self.controller.clear_page()
+        self.controller.current_page = page_complaints.ComplaintsPage(self.controller)
+        self.controller.current_page.grid(row=0, column=0, sticky="nsew")
+
+    def open_repairs(self):
+        self.controller.clear_page()
+        self.controller.current_page = page_repairs.RepairsPage(self.controller)
+        self.controller.current_page.grid(row=0, column=0, sticky="nsew")
         print("Dashboard refreshed at:", datetime.now().strftime("%H:%M:%S"))
