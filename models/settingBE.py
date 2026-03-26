@@ -9,7 +9,7 @@ def changeEmail(new_email):
         if conn.is_connected():  # Checking if connection is established
             cursor = conn.cursor()
             cursor.execute("""SELECT * FROM UserTbl 
-                WHERE Email = %s AND userID = %s
+                WHERE Email = %s AND userID != %s
                 """, (new_email, user_session.current_user_id))
             existingemail = cursor.fetchone()
             
