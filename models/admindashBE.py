@@ -2,7 +2,7 @@
 from db import db
 from . import user_session
 import time, datetime
-import plotly.graph_objects as go
+import bcrypt
 
 class adminBE():# values = ["All Roles", "Front-desk Staff", "Maintenance", "Finance"]
     def getStaffData():
@@ -20,19 +20,50 @@ class adminBE():# values = ["All Roles", "Front-desk Staff", "Maintenance", "Fin
 
         return tableContents
     
+    def addStaff(fullname,phone,email,password,role):
+        conn = db.getconnection()
+        cursor = conn.cursor()
+
+        today = datetime.datetime.now().date()
+        hashed = bcrypt.hashpw(password.encode(), bcrypt.gensalt())
+
+        cursor.execute("""INSERT INTO UserTbl (fullName, Phone, Email, Password,
+            Role, locationID, Created_at) VALUES (%s,%s,%s,%s,%s,%s,%s)""",
+            (fullname, phone, email, hashed, role, user_session.user_base, today))
+        conn.commit()
+
+        cursor.close()
+        conn.close()
+
+    def editStaff(userId, fullname, phone, email, role): ##COMPLETE
+        conn = db.getconnection()
+        cursor = conn.cursor()
+
+        cursor.execute("""UPDATE UserTbl 
+            SET fullName = %s , Phone = %s, Email = %s, Role = %s
+            WHERE userID = %s""",(fullname, phone, email, role, userId))
+        conn.commit()
+
+        cursor.close()
+        conn.close()
+    
     def getAptData(): 
         # tableColumns = ("Apartment", "City", "Tenant", "Lease Start", "Lease End", "Rent", "Status")
         conn = db.getconnection()
         cursor = conn.cursor()
 
-        cursor.execute("""SELECT a.apartmentNumber, l.City, u.fullName, la.startDate,
+        cursor.execute("""SELECT a.apartmentNumber, l.City, t.fullName, la.startDate,
             la.endDate, a.monthlyRent, a.Status
             FROM Apartment a
             LEFT JOIN LeaseAgreement la ON la.apartmentID = a.apartmentID
             LEFT JOIN Tenant t ON t.tenantID = la.tenantID
-            LEFT JOIN UserTbl u ON u.Email = t.Email
             JOIN Location l ON l.locationID = a.locationID
-            ORDER BY a.apartmentNumber ASC""")
+            ORDER BY 
+                CASE 
+                    WHEN la.endDate IS NULL THEN 1 
+                    ELSE 0 
+                END,
+                la.endDate ASC""")
         tableContents = cursor.fetchall()
 
         cursor.close()
@@ -54,7 +85,6 @@ class adminBE():# values = ["All Roles", "Front-desk Staff", "Maintenance", "Fin
         conn.close()
 
         return aptList
-
 
     def graph():
         conn = db.getconnection()
@@ -87,15 +117,14 @@ class adminBE():# values = ["All Roles", "Front-desk Staff", "Maintenance", "Fin
 
         try:
             cursor = conn.cursor()
-            cursor.execute(""" SELECT u.fullName, DATE_FORMAT(i.dueDate, '%Y-%m') AS month, 
+            cursor.execute(""" SELECT t.fullName, DATE_FORMAT(i.dueDate, '%Y-%m') AS month, 
                 SUM(i.amount + l.depositAmount) AS paid
-                FROM UserTbl u
-                JOIN Tenant t ON t.Email = u.Email
+                FROM Tenant t
                 JOIN LeaseAgreement l ON l.tenantID = t.tenantID
                 JOIN Apartment a ON a.apartmentID = l.apartmentID
                 JOIN Invoice i ON i.leaseID = l.leaseID
                 WHERE i.Status = 'paid' AND a.apartmentNumber = %s
-                GROUP BY u.fullName, month""",(apt,))
+                GROUP BY t.fullName, month""",(apt,))
             tenantData = cursor.fetchall()
 
             cursor.execute("SELECT apartmentID FROM Apartment WHERE apartmentNumber = %s"
@@ -110,14 +139,13 @@ class adminBE():# values = ["All Roles", "Front-desk Staff", "Maintenance", "Fin
                 prevExists = cursor.fetchone()[0] > 0
 
                 if prevExists:
-                    cursor.execute(""" SELECT u.fullName, DATE_FORMAT(i.dueDate, '%Y-%m') AS month, 
+                    cursor.execute(""" SELECT t.fullName, DATE_FORMAT(i.dueDate, '%Y-%m') AS month, 
                     SUM(i.amount + l.depositAmount) AS paid
-                    FROM UserTbl u
-                    JOIN Tenant t ON t.Email = u.Email
+                    FROM Tenant t
                     JOIN LeaseAgreement l ON l.tenantID = t.tenantID
                     JOIN Invoice i ON i.leaseID = l.leaseID
                     WHERE i.Status = 'paid' AND l.apartmentID = %s
-                    GROUP BY u.fullName, month""",(apartmentID-1,))
+                    GROUP BY t.fullName, month""",(apartmentID-1,))
                     neighbour1 = cursor.fetchall()
                 else:
                     neighbour1 = None
@@ -126,14 +154,13 @@ class adminBE():# values = ["All Roles", "Front-desk Staff", "Maintenance", "Fin
                 nextExists = cursor.fetchone()[0] > 0
                 
                 if nextExists:
-                    cursor.execute(""" SELECT u.fullName, DATE_FORMAT(i.dueDate, '%Y-%m') AS month, 
+                    cursor.execute(""" SELECT t.fullName, DATE_FORMAT(i.dueDate, '%Y-%m') AS month, 
                     SUM(i.amount + l.depositAmount) AS paid
-                    FROM UserTbl u
-                    JOIN Tenant t ON t.Email = u.Email
+                    FROM Tenant t
                     JOIN LeaseAgreement l ON l.tenantID = t.tenantID
                     JOIN Invoice i ON i.leaseID = l.leaseID
                     WHERE i.Status = 'paid' AND l.apartmentID = %s
-                    GROUP BY u.fullName, month""",(apartmentID+1,))
+                    GROUP BY t.fullName, month""",(apartmentID+1,))
                     neighbour2 = cursor.fetchall()
                 else: 
                     neighbour2 = None
@@ -144,14 +171,13 @@ class adminBE():# values = ["All Roles", "Front-desk Staff", "Maintenance", "Fin
                 nextExists = cursor.fetchone()[0] > 0
 
                 if nextExists:
-                    cursor.execute(""" SELECT u.fullName, DATE_FORMAT(i.dueDate, '%Y-%m') AS month, 
+                    cursor.execute(""" SELECT t.fullName, DATE_FORMAT(i.dueDate, '%Y-%m') AS month, 
                     SUM(i.amount + l.depositAmount) AS paid
-                    FROM UserTbl u
-                    JOIN Tenant t ON t.Email = u.Email
+                    FROM Tenant t
                     JOIN LeaseAgreement l ON l.tenantID = t.tenantID
                     JOIN Invoice i ON i.leaseID = l.leaseID
                     WHERE i.Status = 'paid' AND l.apartmentID = %s
-                    GROUP BY u.fullName, month""",(apartmentID+1,))
+                    GROUP BY t.fullName, month""",(apartmentID+1,))
                     neighbour1 = cursor.fetchall()
                 else:
                     neighbour1 = None
