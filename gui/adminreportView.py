@@ -1,7 +1,7 @@
 import customtkinter as ctk
 from tkinter import ttk
 from . import theme
-from . import Nav as nav
+from . import nav
 from models import user_session
 from models.adminReportModel import ReportController
 

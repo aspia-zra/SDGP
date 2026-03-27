@@ -1,4 +1,5 @@
-from . import dbfunc, user_session
+from db import db as dbfunc
+from . import user_session
 
 class ReportModel:
     @staticmethod
@@ -82,6 +83,6 @@ class ReportModel:
         result = cursor.fetchall()
 
         cursor.close()
-        conn.close
+        conn.close()
 
         return result

@@ -52,11 +52,12 @@ class adminBE():# values = ["All Roles", "Front-desk Staff", "Maintenance", "Fin
         conn = db.getconnection()
         cursor = conn.cursor()
 
-        cursor.execute("""SELECT a.apartmentNumber, l.City, t.fullName, la.startDate,
+        cursor.execute("""SELECT a.apartmentNumber, l.City, u.fullName, la.startDate,
             la.endDate, a.monthlyRent, a.Status
             FROM Apartment a
             LEFT JOIN LeaseAgreement la ON la.apartmentID = a.apartmentID
             LEFT JOIN Tenant t ON t.tenantID = la.tenantID
+            LEFT JOIN UserTbl u ON u.userID = t.userID
             JOIN Location l ON l.locationID = a.locationID
             ORDER BY 
                 CASE 
@@ -118,14 +119,15 @@ class adminBE():# values = ["All Roles", "Front-desk Staff", "Maintenance", "Fin
 
         try:
             cursor = conn.cursor()
-            cursor.execute(""" SELECT t.fullName, DATE_FORMAT(i.dueDate, '%Y-%m') AS month, 
+            cursor.execute(""" SELECT u.fullName, DATE_FORMAT(i.dueDate, '%Y-%m') AS month, 
                 SUM(i.amount + l.depositAmount) AS paid
                 FROM Tenant t
+                JOIN UserTbl u ON u.userID = t.userID
                 JOIN LeaseAgreement l ON l.tenantID = t.tenantID
                 JOIN Apartment a ON a.apartmentID = l.apartmentID
                 JOIN Invoice i ON i.leaseID = l.leaseID
                 WHERE i.Status = 'paid' AND a.apartmentNumber = %s
-                GROUP BY t.fullName, month""",(apt,))
+                GROUP BY u.fullName, month""",(apt,))
             tenantData = cursor.fetchall()
 
             cursor.execute("SELECT apartmentID FROM Apartment WHERE apartmentNumber = %s"
@@ -140,13 +142,14 @@ class adminBE():# values = ["All Roles", "Front-desk Staff", "Maintenance", "Fin
                 prevExists = cursor.fetchone()[0] > 0
 
                 if prevExists:
-                    cursor.execute(""" SELECT t.fullName, DATE_FORMAT(i.dueDate, '%Y-%m') AS month, 
+                    cursor.execute(""" SELECT u.fullName, DATE_FORMAT(i.dueDate, '%Y-%m') AS month, 
                     SUM(i.amount + l.depositAmount) AS paid
                     FROM Tenant t
+                    JOIN UserTbl u ON u.userID = t.userID
                     JOIN LeaseAgreement l ON l.tenantID = t.tenantID
                     JOIN Invoice i ON i.leaseID = l.leaseID
                     WHERE i.Status = 'paid' AND l.apartmentID = %s
-                    GROUP BY t.fullName, month""",(apartmentID-1,))
+                    GROUP BY u.fullName, month""",(apartmentID-1,))
                     neighbour1 = cursor.fetchall()
                 else:
                     neighbour1 = None
@@ -155,13 +158,14 @@ class adminBE():# values = ["All Roles", "Front-desk Staff", "Maintenance", "Fin
                 nextExists = cursor.fetchone()[0] > 0
                 
                 if nextExists:
-                    cursor.execute(""" SELECT t.fullName, DATE_FORMAT(i.dueDate, '%Y-%m') AS month, 
+                    cursor.execute(""" SELECT u.fullName, DATE_FORMAT(i.dueDate, '%Y-%m') AS month, 
                     SUM(i.amount + l.depositAmount) AS paid
                     FROM Tenant t
+                    JOIN UserTbl u ON u.userID = t.userID
                     JOIN LeaseAgreement l ON l.tenantID = t.tenantID
                     JOIN Invoice i ON i.leaseID = l.leaseID
                     WHERE i.Status = 'paid' AND l.apartmentID = %s
-                    GROUP BY t.fullName, month""",(apartmentID+1,))
+                    GROUP BY u.fullName, month""",(apartmentID+1,))
                     neighbour2 = cursor.fetchall()
                 else: 
                     neighbour2 = None
@@ -172,13 +176,14 @@ class adminBE():# values = ["All Roles", "Front-desk Staff", "Maintenance", "Fin
                 nextExists = cursor.fetchone()[0] > 0
 
                 if nextExists:
-                    cursor.execute(""" SELECT t.fullName, DATE_FORMAT(i.dueDate, '%Y-%m') AS month, 
+                    cursor.execute(""" SELECT u.fullName, DATE_FORMAT(i.dueDate, '%Y-%m') AS month, 
                     SUM(i.amount + l.depositAmount) AS paid
                     FROM Tenant t
+                    JOIN UserTbl u ON u.userID = t.userID
                     JOIN LeaseAgreement l ON l.tenantID = t.tenantID
                     JOIN Invoice i ON i.leaseID = l.leaseID
                     WHERE i.Status = 'paid' AND l.apartmentID = %s
-                    GROUP BY t.fullName, month""",(apartmentID+1,))
+                    GROUP BY u.fullName, month""",(apartmentID+1,))
                     neighbour1 = cursor.fetchall()
                 else:
                     neighbour1 = None

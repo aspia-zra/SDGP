@@ -1,4 +1,4 @@
-from Models.finance_model import FinanceModel
+from models.finance_model import FinanceModel
 
 
 class FinanceController:

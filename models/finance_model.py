@@ -1,4 +1,5 @@
-from . import dbfunc, user_session
+from db import db as dbfunc
+from . import user_session
 
 class FinanceModel:
 
@@ -63,5 +64,5 @@ class FinanceModel:
                 ON ls.apartmentID = a.apartmentID
             WHERE i.Status IN ("pending", "overdue") AND a.locationID=%s
             ORDER BY i.dueDate ASC
-            LIMIT 10''',(user_session.user_base))
+            LIMIT 10''', (user_session.user_base,))
         return cursor.fetchall()
