@@ -7,13 +7,15 @@ hey, azra here, there's a new sql dump, it's on my branch, not the main branch. 
 
 Write here what dashboards are complete and ready to merge to main before testing:
 - maintenance dash (azra)
-- management dash (azra - merged with imaan's admin dash)
-- admin dash (imaan)
+- mng + admin dash
+- drashti tenant
+
+BRO if u merge urself use one of these branches not imaan's branch pls 
+
 
 
 Incomplete dashboards and status:
 - tenant dash (khanh: idk)
-- drashtis dash (idk)
 - finance dash (rowdha: merging with merccy)
 
 
