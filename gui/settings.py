@@ -45,6 +45,9 @@ class settings(ctk.CTkFrame):
 
     def createSettings(self):
 
+        current_phone = user_session.current_phone or "Not set"
+        current_email = user_session.current_email or "Not set"
+
         self.container = Frame(self, bg="#f5f5f5")
         self.container.grid(row=0, column=1, sticky="nsew", padx=20, pady=20)
         self.container.grid_columnconfigure(0, weight=1)
@@ -64,7 +67,7 @@ class settings(ctk.CTkFrame):
         phoneFrame = Frame(self.container)
         phoneFrame.grid(row = 1, column = 0, pady = 20)
 
-        phoneNumber = Label(phoneFrame, text="Current Number: " + user_session.current_phone)
+        phoneNumber = Label(phoneFrame, text="Current Number: " + current_phone)
         phoneNumber.grid(row = 0, column = 0, pady=10)
         
         changePhoneNumber = Label(phoneFrame, text="Change Phone Number:")
@@ -78,9 +81,9 @@ class settings(ctk.CTkFrame):
             result_label.config(text=msg, fg="green" if "update" in msg else "red")
 
             if "updated" in msg:
-                phoneNumber.config(text="Current Number: " + user_session.current_phone)
+                phoneNumber.config(text="Current Number: " + (user_session.current_phone or "Not set"))
             elif "Must" in msg or "already" in msg:
-                phoneNumber.config(text="Current Number: " + user_session.current_phone)
+                phoneNumber.config(text="Current Number: " + (user_session.current_phone or "Not set"))
             
             self._schedule_result_clear(result_label)
         
@@ -92,7 +95,7 @@ class settings(ctk.CTkFrame):
         emailFrame = Frame(self.container)
         emailFrame.grid(row= 2, column=0, padx=20, pady=20)
 
-        email = Label(emailFrame, text="Current Email: " + user_session.current_email)
+        email = Label(emailFrame, text="Current Email: " + current_email)
         email.grid(row=0, column=0,pady=10)
 
         emailLabel = Label(emailFrame, text="Change Email:")
@@ -106,9 +109,9 @@ class settings(ctk.CTkFrame):
             result_label.config(text=msg, fg="green" if "update" in msg else "red")
 
             if "updated" in msg:
-                email.config(text="Current Email: " + user_session.current_email)
+                email.config(text="Current Email: " + (user_session.current_email or "Not set"))
             elif "Must" in msg or "already" in msg:
-                email.config(text="Current Email: " + user_session.current_email)
+                email.config(text="Current Email: " + (user_session.current_email or "Not set"))
             
             self._schedule_result_clear(result_label)
 

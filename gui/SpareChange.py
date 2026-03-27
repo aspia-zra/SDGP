@@ -87,3 +87,8 @@ class navbar(ctk.CTkFrame):
         UserTbl.logout()
         self.controller.show_login()
 
+
+class FrontDeskGUI(navbar):
+    """Compatibility wrapper expected by gui.nav.open_frontdash."""
+    pass
+
