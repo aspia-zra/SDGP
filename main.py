@@ -3,6 +3,7 @@ import customtkinter as ctk
 from gui.Admindash import *
 from gui.loginpage import *
 from gui.pages_mngdash import mngdashboard
+from gui import page_mdash
 import models.user_session as user_session
 from gui.nav import *
 
@@ -10,6 +11,9 @@ from gui.nav import *
 class App(ctk.CTk):
 	def __init__(self):
 		super().__init__()
+		ctk.set_appearance_mode("light")
+		ctk.set_default_color_theme("blue")
+		self.configure(fg_color="#f5f6fa")
 
 		self.title("Paragon Apartment System")
 		self.geometry("1000x700")
@@ -55,14 +59,26 @@ proc bgerror {msg} {
 		self.current_page.grid(row=0, column=0, sticky="nsew")
 
 	# add dashboard page based on role
-	def show_dashboard(self, user):
-		if user_session.user_type == "admin":
+	def show_dashboard(self, user=None):
+		# Some navigation callbacks invoke this method without a user object.
+		# Use current session role first, and fall back to role from provided user.
+		role = user_session.user_type
+		if role == "" and isinstance(user, dict):
+			role = user.get("Role", "")
+
+		self.navbar_mode = role
+
+		if role == "admin":
 			self.clear_page()
 			self.current_page = admindashboard(self)
 			self.current_page.grid(row=0, column=0, sticky="nsew")
-		elif user_session.user_type == "manager":
+		elif role == "manager":
 			self.clear_page()
 			self.current_page = mngdashboard(self)
+			self.current_page.grid(row=0, column=0, sticky="nsew")
+		elif role == "maintenance":
+			self.clear_page()
+			self.current_page = page_mdash.DashboardPage(self)
 			self.current_page.grid(row=0, column=0, sticky="nsew")
 		else:
 			self.clear_page()
