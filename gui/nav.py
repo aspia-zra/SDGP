@@ -2,11 +2,9 @@ from tkinter import *
 import matplotlib
 import customtkinter as ctk
 
-from gui import Admindash, settings
-from gui.pages_mngdash import mngdashboard
+from . import Admindash, adminreportView, settings, SpareChange as updatedfrontdesk, finance_view
+from .pages_mngdash import mngdashboard
 from models import user_session
-# from . import Admindash, settings
-# from models.logincode import UserTbl
 from . import theme
 
 BG_COLOR = theme.BACKGROUND
@@ -23,9 +21,10 @@ class navbar(ctk.CTkFrame):
 
         if self.mode == "admin":
             self.admin_nav()
+        elif self.mode == "manager":
+            self.mng_nav()
         else:
             self.mng_nav()
-        
         
     # these are the different navbars - each function is a navbar we call for each page/dashboard
      
@@ -65,18 +64,30 @@ class navbar(ctk.CTkFrame):
             text=dashboard_text, **btnConfig)
         dashboard.grid(row = 1, column = 0, padx = 20, pady = 20, sticky = "ew")
 
-        reports = ctk.CTkButton(self.navbar, 
+        reports = ctk.CTkButton(self.navbar,
+            command = self.open_adminreports, 
             text="Reports View", **btnConfig)
-        reports.grid(row = 4, column = 0, padx = 20, pady = 20, sticky = "ew")
+        reports.grid(row = 2, column = 0, padx = 20, pady = 20, sticky = "ew")
 
         maintenance = ctk.CTkButton(self.navbar, 
+            command = self.open_maintdash, 
             text="Maintenance View", **btnConfig)
-        maintenance.grid(row = 5, column = 0, padx = 20, pady = 20, sticky = "ew")
+        maintenance.grid(row = 3, column = 0, padx = 20, pady = 20, sticky = "ew")
+
+        finance = ctk.CTkButton(self.navbar, 
+            command = self.open_financedash, 
+            text="Finance View", **btnConfig)
+        finance.grid(row = 4, column = 0, padx = 20, pady = 20, sticky = "ew")
+
+        frontdesk = ctk.CTkButton(self.navbar,
+            command = self.open_frontdash,  
+            text="Front-desk View", **btnConfig)
+        frontdesk.grid(row = 5, column = 0, padx = 20, pady = 20, sticky = "ew")
 
         settings = ctk.CTkButton(self.navbar, 
             command = self.open_settings,
             text="Settings", **btnConfig)
-        settings.grid(row = 3, column = 0, padx = 20, pady = 20, sticky = "ew")
+        settings.grid(row = 6, column = 0, padx = 20, pady = 20, sticky = "ew")
 
         logout = ctk.CTkButton(self.navbar, 
             fg_color=theme.PRIMARY, 
@@ -134,10 +145,8 @@ class navbar(ctk.CTkFrame):
             command = self.logoutbtn)
         logout.grid(row = 8, column = 0, padx = 20, pady = 20, sticky = "s")    
 
-    
     # these are definitions for the buttons. only these buttons work for now
     
-
     def open_mngdash(self): 
         self.controller.clear_page()
         self.controller.current_page = mngdashboard(self.controller)
@@ -148,7 +157,27 @@ class navbar(ctk.CTkFrame):
         self.controller.current_page = Admindash.admindashboard(self.controller)
         self.controller.current_page.grid(row=0, column=0, sticky="nsew")
 
-    def open_settings(self):
+    def open_adminreports(self): 
+        self.controller.clear_page()
+        self.controller.current_page = adminreportView.ReportsView(self.controller, self.controller)
+        self.controller.current_page.grid(row=0, column=0, sticky="nsew")
+
+    def open_maintdash(self):
+        self.controller.clear_page()
+        self.controller.current_page = settings.settings(self.controller)
+        self.controller.current_page.grid(row=0, column=0, sticky="nsew")
+
+    def open_financedash(self): 
+        self.controller.clear_page()
+        self.controller.current_page = finance_view.FinanceView(self.controller, self.controller)
+        self.controller.current_page.grid(row=0, column=0, sticky="nsew")
+
+    def open_frontdash(self):
+        self.controller.clear_page()
+        self.controller.current_page = updatedfrontdesk.FrontDeskGUI(self.controller, self.controller)
+        self.controller.current_page.grid(row=0, column=0, sticky="nsew")
+
+    def open_settings(self): 
         self.controller.clear_page()
         self.controller.current_page = settings.settings(self.controller)
         self.controller.current_page.grid(row=0, column=0, sticky="nsew")

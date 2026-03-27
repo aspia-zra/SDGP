@@ -114,6 +114,7 @@ class adminBE():# values = ["All Roles", "Front-desk Staff", "Maintenance", "Fin
     def tenantGraphs(apt):
         # late payment history per property graph - left
         conn = db.getconnection()
+        cursor = None
 
         try:
             cursor = conn.cursor()
@@ -184,6 +185,7 @@ class adminBE():# values = ["All Roles", "Front-desk Staff", "Maintenance", "Fin
 
                 return tenantData, neighbour1, None
         finally:
-            cursor.close()
+            if cursor is not None:
+                cursor.close()
             conn.close()
         

@@ -1,17 +1,17 @@
 from tkinter import *
 import customtkinter as ctk
-from . import nav as nav
+from . import nav
+from . import theme
 from models import user_session
 from models.settingBE import changeEmail, changePhone, changePassword, changeFontsize
 
 class settings(ctk.CTkFrame):
-    def __init__(self, main):
-        super().__init__(main)
+    def __init__(self, parent):
+        super().__init__(parent, fg_color=theme.BACKGROUND)
 
-        self.main = main
         self.grid(row=0, column=0, sticky="nsew")
 
-        self.nav = nav.navbar(self, self.main)
+        self.nav = nav.navbar(self, parent, mode=user_session.user_type.lower())
         self.nav.grid(row=0, column=0, sticky="ns")
 
         self.grid_columnconfigure(1, weight = 1)
@@ -56,7 +56,7 @@ class settings(ctk.CTkFrame):
         titleFrame = Frame(self.container)
         titleFrame.grid(row = 0, column=0, columnspan = 2, pady = 20,)
 
-        titlelabel = Label(titleFrame, text="Settings", font=("Arial", 50, "bold"), bg = nav.BG_COLOR)
+        titlelabel = Label(titleFrame, text="Settings", font=("Arial", 50, "bold"))
         titlelabel.grid(row= 0, column = 0,pady=20)
 
         #### LEFT SIDE

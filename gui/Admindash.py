@@ -3,7 +3,7 @@ from tkinter import ttk
 import matplotlib.pyplot as plt
 import plotly.graph_objects as go
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-import gui.theme as theme
+from . import theme
 from datetime import datetime
 from . import nav
 from models.admindashBE import adminBE
