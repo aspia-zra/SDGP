@@ -1,5 +1,43 @@
 # SDGP
 
+<<<<<<< HEAD
 quick branch overview - this maintenance dashboard was copy pasted from the asd repo from my branch
 need to change navbar to link with navbar page, and link to themes. 
 test with dummy data
+=======
+## IMPLEMENTATION
+
+hey, azra here,
+
+
+Write here what dashboards are complete and ready to merge to main before testing:
+- maintenance dash (azra)
+- drashtis dash (front desk dashboard done)
+
+
+Incomplete dashboards and status:
+- management dash (azra: front end done)
+- admin dash (imaan: front end done)
+- tenant dash (khanh: idk)
+- finance dash (rowdha: merging with merccy)
+
+
+
+
+
+
+
+## What's left:
+- TESTING:
+(manual and automated test plans)
+- REPORT: (scope, eval and diagrams, adding use case methods and diagram descriptions)
+- SLIDES: (will do thursday together)
+- INDIVIDUAL ASSIGNMENTS (azra complete)
+- ADD CVs
+
+ ## TO REVIEW
+ - sustainability
+ - has our work met the requirements
+
+
+>>>>>>> front-desk
