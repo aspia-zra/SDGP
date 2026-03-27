@@ -7,6 +7,7 @@ from gui import page_assign_apartment
 import gui.navbar as nav
 from gui import page_complaints
 from gui import page_repairs
+import models.user_session as user_session
 
 class FrontDeskGUI(ctk.CTkFrame):
 
@@ -21,7 +22,7 @@ class FrontDeskGUI(ctk.CTkFrame):
         self.grid_columnconfigure(1, weight=1)
         self.grid_rowconfigure(1, weight=1)
 
-        self.nav = nav.navbar(self, parent, mode=user_session.user_type.lower())
+        self.nav = nav.navbar(self, parent)
         self.nav.grid(row=0, rowspan=2, column=0, sticky="ns")
 
         self._create_header()
@@ -50,6 +51,7 @@ class FrontDeskGUI(ctk.CTkFrame):
         self.Register_tenant()
         self.View_tenants()
         self.Search_tenants()
+        self.QuickActions()
 
     def Register_tenant(self):
 
@@ -208,7 +210,7 @@ class FrontDeskGUI(ctk.CTkFrame):
             fg_color=SURFACE,
             corner_radius=12
         )
-        card.grid(row=3, column = 0, sticky='ew', pady=10)
+        card.grid(row=5, column = 0, sticky='ew', pady=10)
 
         ctk.CTkLabel(
             card,
@@ -225,14 +227,14 @@ class FrontDeskGUI(ctk.CTkFrame):
             text = "Assign Apartment",
             fg_color=PRIMARY,
             command = self.open_assignApt
-        ).grid(row=0,column=0,padx=10)
+        ).grid(row=0,column=2,padx=10)
 
         ctk.CTkButton(
             btnFrame,
             text = "Complaints",
             fg_color=PRIMARY,
             command = self.open_complaints
-        ).grid(row=0,column=0,padx=10)
+        ).grid(row=0,column=1,padx=10)
 
         ctk.CTkButton(
             btnFrame,
@@ -248,22 +250,26 @@ class FrontDeskGUI(ctk.CTkFrame):
         self.Register_tenant()
         self.View_tenants()
         self.Search_tenants()
+        self.QuickActions()
 
         print("Dashboard refreshed at:", datetime.now().strftime("%H:%M:%S"))
 
     
     def open_assignApt(self):
         self.controller.clear_page()
-        self.controller.current_page = page_assign_apartment.AssignApartmentPage(self.controller)
+        self.controller.current_page = page_assign_apartment.AssignApartmentPage(self.controller,self.controller, self.backend)
         self.controller.current_page.grid(row=0, column=0, sticky="nsew")
     
     def open_complaints(self):
         self.controller.clear_page()
-        self.controller.current_page = page_complaints.ComplaintsPage(self.controller)
+        self.controller.current_page = page_complaints.ComplaintsPage(self.controller,self.controller)
         self.controller.current_page.grid(row=0, column=0, sticky="nsew")
 
     def open_repairs(self):
         self.controller.clear_page()
-        self.controller.current_page = page_repairs.RepairsPage(self.controller)
+        self.controller.current_page = page_repairs.RepairsPage(self.controller,self.controller)
         self.controller.current_page.grid(row=0, column=0, sticky="nsew")
-        print("Dashboard refreshed at:", datetime.now().strftime("%H:%M:%S"))
+
+    def clear_page(self):
+        for widget in self.container.winfo_children():
+            widget.destroy()
