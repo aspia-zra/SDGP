@@ -6,10 +6,21 @@ class FrontDesk:
     def insert_tenant(self, name, phone, ni_number, email):
         conn = get_connection()
         cursor = conn.cursor()
-        query = "INSERT INTO tenant (fullname, phone, national_Insurance, email) VALUES (%s, %s, %s, %s)"
-        cursor.execute(query, (name, phone, ni_number, email))
+        role = 'tenant'
+        password = 'password'
+
+        query = "INSERT INTO usertbl (fullName, Phone, Email, Role, Password) VALUES (%s, %s, %s, %s, %s)"
+        cursor.execute(query, (name, phone, email, role, password))
         conn.commit()
         cursor.close()
+
+        conn = get_connection()
+        cursor = conn.cursor()
+        query = "INSERT INTO tenant (national_Insurance, Email) VALUES (%s, %s)"
+        cursor.execute(query, (ni_number, email))
+        conn.commit()
+        cursor.close()
+
 
     def register_tenant(self, name, phone, ni, email):
         if not name or not phone or not ni or not email:
