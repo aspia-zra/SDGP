@@ -1,10 +1,9 @@
 import bcrypt
-from db import db_connection  # updated to your current connection module
-from . import user_session
+from db.db_connection import get_connection
 
 
 class UserTbl:
-    # Hashes a password using bcrypt before storing in the database
+
     @staticmethod
     def hash_password(password):
         hashed = bcrypt.hashpw(password.encode(), bcrypt.gensalt())
@@ -13,8 +12,7 @@ class UserTbl:
     @staticmethod
     def login(email, password):
         try:
-            # Use db_connection.py
-            conn = db_connection.get_connection()
+            conn = get_connection()
             cursor = conn.cursor(dictionary=True)
 
             cursor.execute("SELECT * FROM UserTbl WHERE Email = %s", (email,))
@@ -27,8 +25,6 @@ class UserTbl:
             password_correct = bcrypt.checkpw(password.encode(), user["Password"].encode())
 
             if password_correct:
-                # Update the session with user info
-                user_session.user_sessions(user)
                 return user
             else:
                 return None
@@ -36,8 +32,3 @@ class UserTbl:
         except Exception as e:
             print("Login error:", e)
             return None
-
-    @staticmethod
-    def logout():
-        # Clear the current user session
-        user_session.user_sessions(None)

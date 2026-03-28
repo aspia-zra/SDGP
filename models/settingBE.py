@@ -1,10 +1,10 @@
 #Separate python file for logging in and out
 from passlib.hash import sha256_crypt
-from . import dbfunc
+from db import db_connection
 from . import user_session
 
 def changeEmail(new_email):
-    conn = dbfunc.getconnection()
+    conn = db_connection.get_connection()
     if conn is not None:  # Checking if connection is None
         if conn.is_connected():  # Checking if connection is established
             cursor = conn.cursor()
@@ -38,7 +38,7 @@ def changeEmail(new_email):
         print('DBFunc error')
 
 def changePhone(new_phone):
-    conn = dbfunc.getconnection()
+    conn = db_connection.get_connection()
     if conn is not None:  # Checking if connection is None
         if conn.is_connected():  # Checking if connection is established
             cursor = conn.cursor()
@@ -71,7 +71,7 @@ def changePhone(new_phone):
         print('DBFunc error')
 
 def changePassword(new_password, current_password):
-    conn = dbfunc.getconnection()
+    conn = db_connection.get_connection()
     cursor = conn.cursor()
     cursor.execute("SELECT Password FROM UserTbl WHERE userID = %s",(user_session.current_user_id,))
     rows = cursor.fetchone()

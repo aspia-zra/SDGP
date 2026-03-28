@@ -1,8 +1,8 @@
 from tkinter import *
 import customtkinter as ctk
 from . import NavBar
-from Models import user_session
-from Models.settingBE import changeEmail, changePhone, changePassword, changeFontsize
+from models import user_session
+from models.settingBE import changeEmail, changePhone, changePassword, changeFontsize
 
 class settings(ctk.CTkFrame):
     def __init__(self, main):

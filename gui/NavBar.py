@@ -1,8 +1,8 @@
 from tkinter import *
 import matplotlib
 import customtkinter as ctk
-from . import Admindash, settings
-from Models.logincode import UserTbl
+from . import settings, Payments, tenant_dashboard
+from models.logincode import UserTbl
 
 #Themes- work on font
 BG_COLOR = "#f5f3ff"
@@ -41,20 +41,28 @@ class navbar(ctk.CTkFrame):
             font=("Arial", 24))
         navtitle_label.grid(row = 0, column = 0, columnspan = 2, padx = 20, pady = 20,)
 
-        dashboard = ctk.CTkButton(
+        profile = ctk.CTkButton(
             self.navbar, 
             fg_color="#202e75", 
-            hover_color="#0f0f30",
-            command = self.open_admindash,
-            text="Dashboard")
-        dashboard.grid(row = 1, column = 0, columnspan = 1, padx = 20, pady = 20, sticky = "ew")
+            hover_color="#0f0f30", 
+            command = self.open_profile,
+            text="Profile")
+        profile.grid(row = 2, column = 0, columnspan = 1, padx = 20, pady = 20, sticky = "ew")
 
-        notif = ctk.CTkButton(
+        payments = ctk.CTkButton(
             self.navbar, 
             fg_color="#202e75", 
-            hover_color="#0f0f30",
-            text="Notifications")
-        notif.grid(row = 2, column = 0, columnspan = 1, padx = 20, pady = 20, sticky = "ew")
+            hover_color="#0f0f30", 
+            text="Payments",
+            command=self.open_payments)
+        payments.grid(row = 3, column = 0, columnspan = 1, padx = 20, pady = 20, sticky = "ew")
+
+        complaints = ctk.CTkButton(
+            self.navbar, 
+            fg_color="#202e75", 
+            hover_color="#0f0f30", 
+            text="Complaints")
+        complaints.grid(row = 4, column = 0, columnspan = 1, padx = 20, pady = 20, sticky = "ew")
 
         settings = ctk.CTkButton(
             self.navbar, 
@@ -62,28 +70,7 @@ class navbar(ctk.CTkFrame):
             hover_color="#0f0f30", 
             command = self.open_settings,
             text="Settings")
-        settings.grid(row = 3, column = 0, columnspan = 1, padx = 20, pady = 20, sticky = "ew")
-
-        payments = ctk.CTkButton(
-            self.navbar, 
-            fg_color="#202e75", 
-            hover_color="#0f0f30", 
-            text="Payments")
-        payments.grid(row = 4, column = 0, columnspan = 1, padx = 20, pady = 20, sticky = "ew")
-
-        complaints = ctk.CTkButton(
-            self.navbar, 
-            fg_color="#202e75", 
-            hover_color="#0f0f30", 
-            text="Complaints")
-        complaints.grid(row = 5, column = 0, columnspan = 1, padx = 20, pady = 20, sticky = "ew")
-
-        repairs = ctk.CTkButton(
-            self.navbar, 
-            fg_color="#202e75", 
-            hover_color="#0f0f30", 
-            text="Repairs")
-        repairs.grid(row = 6, column = 0, columnspan = 1, padx = 20, pady = 20, sticky = "ew")
+        settings.grid(row = 5, column = 0, columnspan = 1, padx = 20, pady = 20, sticky = "ew")
 
         logout = ctk.CTkButton(
             self.navbar, 
@@ -91,18 +78,23 @@ class navbar(ctk.CTkFrame):
             hover_color="#7a070d", 
             text="Logout", 
             command = self.logoutbtn)
-        logout.grid(row = 8, column = 0, columnspan = 1, padx = 20, pady = 20, sticky = "ew")
+        logout.grid(row = 7, column = 0, columnspan = 1, padx = 20, pady = 20, sticky = "ew")
     
-    def open_admindash(self):
+    def open_profile(self):
         self.controller.clear_page()
-        self.controller.current_page = Admindash.admindashboard(self.controller)
+        self.controller.current_page = tenant_dashboard.TenantDashboard(self.controller)
         self.controller.current_page.grid(row=0, column=0, sticky="nsew")
 
     def open_settings(self):
         self.controller.clear_page()
         self.controller.current_page = settings.settings(self.controller)
         self.controller.current_page.grid(row=0, column=0, sticky="nsew")
-    
+
+    def open_payments(self):
+        self.controller.clear_page()
+        self.controller.current_page = Payments.payments(self.controller)
+        self.controller.current_page.grid(row=0, column=0, sticky="nsew")
+
     def logoutbtn(self):
-        UserTbl.logout()
+        UserTbl.logout() 
         self.controller.show_login()
