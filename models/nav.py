@@ -4,7 +4,7 @@ from tkinter import *
 import matplotlib
 import customtkinter as ctk
 from . import Admindash, settings
-from Models.logincode import UserTbl
+from models.logincode import UserTbl
 import theme
 
 class navbar(ctk.CTkFrame):

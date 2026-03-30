@@ -2,9 +2,9 @@ import mysql.connector
 from mysql.connector import errorcode
 
 hostname = "localhost"
-db = "secondverparagonapartment"
+db = "sdgpdump"
 username = "root"
-passwd = "Drashtisamgi02!"
+passwd = "Mathsmasters1!"
 
 
 def get_connection():

@@ -1,8 +1,8 @@
 import customtkinter as ctk
 from tkinter import ttk
 from GUI import theme, nav
-from Models import user_session
-from Models.ReportsBEver.maintReportModel import ReportController
+from models import user_session
+from models.ReportsBEver.maintReportModel import ReportController
 
 class ReportsView(ctk.CTkFrame):
 

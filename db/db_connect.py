@@ -8,8 +8,8 @@ class Database:
         self.conn = mysql.connector.connect(
             host="localhost",
             user="root",
-            password="Root123456!",
-            database="SDGPDUMP"
+            password="Mathsmasters1!",
+            database="sdgpdump"
         )
 
         # Buffered cursor prevents "Unread result found" across back-to-back queries.
