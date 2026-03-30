@@ -66,3 +66,4 @@ class FinanceModel:
             ORDER BY i.dueDate ASC
             LIMIT 10''', (user_session.user_base,))
         return cursor.fetchall()
+

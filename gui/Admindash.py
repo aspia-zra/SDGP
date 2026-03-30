@@ -611,3 +611,4 @@ class admindashboard(ctk.CTkFrame):
             found.append(apt)
 
         return found
+

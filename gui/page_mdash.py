@@ -333,3 +333,4 @@ class DashboardPage(ctk.CTkFrame):
             text_color=theme.SURFACE,
             command=submit_completion,
         ).pack(pady=15)
+

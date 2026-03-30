@@ -92,3 +92,4 @@ class FrontDeskGUI(navbar):
     """Compatibility wrapper expected by gui.nav.open_frontdash."""
     pass
 
+

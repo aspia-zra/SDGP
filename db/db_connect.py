@@ -33,3 +33,4 @@ class Database:
 
 # default shared connection (optional)
 db = Database()
+

@@ -86,3 +86,4 @@ class ReportModel:
         conn.close()
 
         return result
+

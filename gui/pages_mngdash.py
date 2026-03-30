@@ -246,3 +246,4 @@ class mngdashboard(ctk.CTkFrame):
 
 
 
+

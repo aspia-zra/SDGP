@@ -20,3 +20,4 @@ HEADING_FONT = ("Helvetica", 18, "bold")
 SUBHEADING_FONT = ("Helvetica", 14, "bold")
 BODY_FONT = ("Helvetica", 12)
 SMALL_FONT = ("Helvetica", 10)
+

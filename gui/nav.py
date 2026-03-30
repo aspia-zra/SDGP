@@ -324,3 +324,4 @@ class navbar(ctk.CTkFrame):
             return
 
         messagebox.showinfo("Logout", "Logout action is not available yet.")
+

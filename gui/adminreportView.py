@@ -232,3 +232,4 @@ class ReportsView(ctk.CTkFrame):
             tree.delete(item)
         for row in rows:
             tree.insert("", "end", values=row)
+

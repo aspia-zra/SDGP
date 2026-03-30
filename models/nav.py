@@ -150,3 +150,4 @@ class navbar(ctk.CTkFrame):
     def logoutbtn(self):
         UserTbl.logout()
         self.controller.show_login()
+

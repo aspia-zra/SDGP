@@ -293,3 +293,4 @@ class RepairsPage(ctk.CTkFrame):
         self.apartment_entry.delete(0, "end")
         self.date_entry.delete(0, "end")
         self.priority_box.set("2")
+

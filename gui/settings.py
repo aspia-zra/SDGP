@@ -193,3 +193,4 @@ class settings(ctk.CTkFrame):
 
         result_label = Label(titleFrame, text="")
         result_label.grid(row=1, column=0, columnspan=2, pady=10)
+

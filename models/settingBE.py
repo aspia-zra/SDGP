@@ -143,3 +143,4 @@ def changeFontsize(new_fontsize):
     else:
         user_session.personal_fontsize = new_fontsize
         return "Personal font size updated."
+
