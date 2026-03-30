@@ -394,4 +394,3 @@ class Repair:
             return True, f"Email notification sent to {tenant_email}."
         except Exception as exc:
             return False, f"Email send failed: {exc}"
-

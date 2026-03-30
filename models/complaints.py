@@ -56,4 +56,3 @@ class Complaints:
             ),
         )
         return True
-

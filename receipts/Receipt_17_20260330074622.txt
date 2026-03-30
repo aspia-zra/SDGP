@@ -1,0 +1,8 @@
+
+Receipt - Invoice 17
+Date: 2026-03-30 07:46:22
+
+Total Paid: 990.0
+Late Fee: 90.0
+
+Thank you for your payment!

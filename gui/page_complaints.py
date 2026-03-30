@@ -132,4 +132,3 @@ class ComplaintsPage(ctk.CTkFrame):
                        command=self.submit_complaint
                        )
         button.grid(row = 5, column = 3, columnspan = 1, padx = 20, pady = 20, sticky = "ew")
-

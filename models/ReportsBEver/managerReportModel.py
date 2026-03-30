@@ -1,4 +1,4 @@
-from Models.ReportsBEver.managereportsBE import ReportModel
+from models.ReportsBEver.managereportsBE import ReportModel
 
 
 class ReportController:
