@@ -1,22 +1,21 @@
-import os
 from datetime import datetime
 
-def generate_receipt(invoiceID, total, lateFee):
-    now = datetime.now()
-    receipt_text = f"""
-Receipt - Invoice {invoiceID}
-Date: {now.strftime('%Y-%m-%d %H:%M:%S')}
 
-Total Paid: £{total}
-Late Fee: £{lateFee}
-
-Thank you for your payment!
+def generate_receipt(invoice_id, tenant_name, amount, due_date, status):
+    filename = f"receipt_{invoice_id}.txt"
+    content = f"""{'='*40}
+   PARAGON APARTMENT MANAGEMENT
+         PAYMENT RECEIPT
+{'='*40}
+Receipt Date : {datetime.now().strftime('%Y-%m-%d %H:%M')}
+Invoice ID   : {invoice_id}
+Tenant Name  : {tenant_name}
+Amount       : {amount}
+Due Date     : {due_date}
+Status       : {status}
+{'='*40}
+Thank you for your payment.
 """
-
-    # Save to receipts folder
-    os.makedirs("receipts", exist_ok=True)
-    filename = f"receipts/Receipt_{invoiceID}_{now.strftime('%Y%m%d%H%M%S')}.txt"
     with open(filename, "w") as f:
-        f.write(receipt_text)
-
-    return filename
+        f.write(content)
+    return filename, content

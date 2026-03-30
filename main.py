@@ -1,12 +1,15 @@
 import customtkinter as ctk
 from gui.loginpage import LoginPage
-from gui.tenant_dashboard import TenantDashboard
+from gui.finance_view import FinanceView
+from gui.reports_view import ReportsView
+from gui.payment_page import PaymentPage
 import models.user_session as user_session
-
-# Existing staff imports remain untouched
+from gui import theme
 from gui.Admindash import *
 from gui.pages_mngdash import mngdashboard
 from gui import page_mdash
+from gui.tenant_dashboard import TenantDashboard
+
 
 class App(ctk.CTk):
     def __init__(self):
@@ -14,25 +17,19 @@ class App(ctk.CTk):
         ctk.set_appearance_mode("light")
         ctk.set_default_color_theme("blue")
         self.configure(fg_color="#f5f6fa")
-
         self.title("Paragon Apartment System")
-        self.geometry("1000x700")
-
+        self.geometry("1200x700")
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=1)
-
         self.current_page = None
         self.app_controller = self
         self.navbar_mode = ""
         self._install_bgerror_filter()
         self.protocol("WM_DELETE_WINDOW", self._on_close)
-
         self.show_login()
 
     def _install_bgerror_filter(self):
-        # Suppress harmless Tcl background callback errors during shutdown.
-        self.tk.eval(
-            """
+        self.tk.eval("""
 proc bgerror {msg} {
     if {[string match "*invalid command name*" $msg] ||
         [string match "*application has been destroyed*" $msg]} {
@@ -40,8 +37,7 @@ proc bgerror {msg} {
     }
     puts stderr $msg
 }
-"""
-        )
+""")
 
     def _on_close(self):
         try:
@@ -61,7 +57,6 @@ proc bgerror {msg} {
         self.current_page = LoginPage(self, self.show_dashboard)
         self.current_page.grid(row=0, column=0, sticky="nsew")
 
-    # Show dashboard based on role
     def show_dashboard(self, user=None):
         role = user_session.user_type
         if role == "" and isinstance(user, dict):
@@ -76,6 +71,11 @@ proc bgerror {msg} {
             self.navbar_mode = "manager"
             self.clear_page()
             self.current_page = mngdashboard(self)
+            self.current_page.grid(row=0, column=0, sticky="nsew")
+        elif role == "finance":
+            self.navbar_mode = "finance"
+            self.clear_page()
+            self.current_page = FinanceView(self, self)
             self.current_page.grid(row=0, column=0, sticky="nsew")
         elif role == "maintenance":
             self.navbar_mode = "maintenance"
@@ -101,7 +101,6 @@ proc bgerror {msg} {
 
     def show_complaints(self):
         from gui.page_complaints import ComplaintsPage
-
         self.clear_page()
         self.current_page = ComplaintsPage(self)
         self.current_page.grid(row=0, column=0, sticky="nsew")
@@ -114,7 +113,6 @@ proc bgerror {msg} {
 
     def show_repairs(self):
         from gui.page_repairs import RepairsPage
-
         self.clear_page()
         self.current_page = RepairsPage(self, self)
         self.current_page.grid(row=0, column=0, sticky="nsew")
