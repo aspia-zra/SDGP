@@ -87,6 +87,13 @@ proc bgerror {msg} {
             self.clear_page()
             self.current_page = TenantDashboard(self, self)
             self.current_page.grid(row=0, column=0, sticky="nsew")
+        elif role == "frontdesk":
+            from gui.updatedfrontdesk import FrontDeskGUI
+
+            self.navbar_mode = "frontdesk"
+            self.clear_page()
+            self.current_page = FrontDeskGUI(self, self)
+            self.current_page.grid(row=0, column=0, sticky="nsew")
         else:
             self.navbar_mode = ""
             self.clear_page()

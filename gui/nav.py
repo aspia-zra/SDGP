@@ -1,9 +1,10 @@
 from tkinter import messagebox
 import customtkinter as ctk
 
-from . import Admindash, adminreportView, settings, SpareChange as updatedfrontdesk, finance_view
+from . import Admindash, adminreportView, settings, finance_view
 from .pages_mngdash import mngdashboard
 from models import user_session
+from models.front_desk import FrontDesk
 from . import theme
 
 BG_COLOR = theme.BACKGROUND
@@ -14,6 +15,7 @@ class navbar(ctk.CTkFrame):
         super().__init__(parent, fg_color=theme.SECONDARY)
         self.controller = controller
         self.mode = mode
+        self.model = FrontDesk()
 
         self.grid(row=0, column=0, sticky="ns")
         self.grid_rowconfigure(0, weight=1)
@@ -32,7 +34,11 @@ class navbar(ctk.CTkFrame):
         if mode in {"management", "manager"}:
             self.mng_nav()
             return
-        
+
+        if mode == "frontdesk":
+            self.front_nav()
+            return
+
         if mode == "tenant":
             self.tenant_nav()
             return
@@ -254,6 +260,51 @@ class navbar(ctk.CTkFrame):
         )
         logout.grid(row=8, column=0, padx=20, pady=20, sticky="s")
 
+    def front_nav(self):
+        self._reset_navbar()
+        btnConfig = self._nav_button_config()
+
+        dashboard = ctk.CTkButton(
+            self.navbar,
+            command=self.open_frontdash,
+            text="Dashboard",
+            **btnConfig,
+        )
+        dashboard.grid(row=1, column=0, padx=20, pady=20, sticky="ew")
+
+        complaints = ctk.CTkButton(
+            self.navbar,
+            command=self.open_complaints,
+            text="Complaints",
+            **btnConfig,
+        )
+        complaints.grid(row=2, column=0, padx=20, pady=20, sticky="ew")
+
+        repairs = ctk.CTkButton(
+            self.navbar,
+            command=self.open_repairs,
+            text="Repairs",
+            **btnConfig,
+        )
+        repairs.grid(row=3, column=0, padx=20, pady=20, sticky="ew")
+
+        assign_apartment = ctk.CTkButton(
+            self.navbar,
+            command=self.open_assign_apartment,
+            text="Assign Apartment",
+            **btnConfig,
+        )
+        assign_apartment.grid(row=4, column=0, padx=20, pady=20, sticky="ew")
+
+        logout = ctk.CTkButton(
+            self.navbar,
+            fg_color=theme.PRIMARY,
+            hover_color=theme.DANGER,
+            text="Logout",
+            command=self.logoutbtn,
+        )
+        logout.grid(row=8, column=0, padx=20, pady=20, sticky="s")
+
     def tenant_nav(self):
         self._reset_navbar()
         btnConfig = self._nav_button_config()
@@ -356,8 +407,10 @@ class navbar(ctk.CTkFrame):
         self.controller.current_page.grid(row=0, column=0, sticky="nsew")
 
     def open_frontdash(self):
+        from .updatedfrontdesk import FrontDeskGUI
+
         self.controller.clear_page()
-        self.controller.current_page = updatedfrontdesk.FrontDeskGUI(self.controller, self.controller)
+        self.controller.current_page = FrontDeskGUI(self.controller, self.controller)
         self.controller.current_page.grid(row=0, column=0, sticky="nsew")
 
     def open_settings(self):
@@ -366,6 +419,13 @@ class navbar(ctk.CTkFrame):
 
         self.controller.clear_page()
         self.controller.current_page = settings.settings(self.controller)
+        self.controller.current_page.grid(row=0, column=0, sticky="nsew")
+
+    def open_assign_apartment(self):
+        from .page_assign_apartment import AssignApartmentPage
+
+        self.controller.clear_page()
+        self.controller.current_page = AssignApartmentPage(self.controller, self.controller, self.model)
         self.controller.current_page.grid(row=0, column=0, sticky="nsew")
 
     def open_maintenance_dashboard(self):

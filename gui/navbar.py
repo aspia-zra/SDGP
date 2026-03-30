@@ -2,10 +2,6 @@ from tkinter import *
 import customtkinter as ctk
 from models.logincode import UserTbl
 from gui.theme import *
-from gui.updatedfrontdesk import FrontDeskGUI
-from gui.page_complaints import ComplaintsPage
-from gui.page_repairs import RepairsPage
-from gui.page_assign_apartment import AssignApartmentPage
 from models.front_desk import FrontDesk
 
 
@@ -83,21 +79,29 @@ class navbar(ctk.CTkFrame):
                 widget.destroy()
 
     def open_frontdesk(self):
+        from gui.updatedfrontdesk import FrontDeskGUI
+
         self.controller.clear_page()
         self.controller.current_page = FrontDeskGUI(self.controller, self.controller)
         self.controller.current_page.grid(row=0, column=0, sticky="nsew")
     
     def open_complaints(self):
+        from gui.page_complaints import ComplaintsPage
+
         self.controller.clear_page()
         self.controller.current_page = ComplaintsPage(self.controller, self.controller)
         self.controller.current_page.grid(row=0, column=0, sticky="nsew")
 
     def open_repairs(self):
+        from gui.page_repairs import RepairsPage
+
         self.controller.clear_page()
         self.controller.current_page = RepairsPage(self.controller, self.controller)
         self.controller.current_page.grid(row=0, column=0, sticky="nsew")
     
     def open_assign_apartment(self):
+        from gui.page_assign_apartment import AssignApartmentPage
+
         self.controller.clear_page()
         self.controller.current_page = AssignApartmentPage(self.controller, self.controller, self.model)
         self.controller.current_page.grid(row=0, column=0, sticky="nsew")
