@@ -108,7 +108,15 @@ class Repair:
         FROM Complaint
         WHERE Status = 'open'
         """
-        return db.fetch_all(query)
+        try:
+            return db.fetch_all(query)
+        except Exception:
+            fallback_query = """
+            SELECT complaintID, apartmentID, Initial_Issue AS InitialIssue, Description, reportDate, Severity
+            FROM Complaint
+            WHERE Status = 'open'
+            """
+            return db.fetch_all(fallback_query)
 
 
     @staticmethod
@@ -118,7 +126,15 @@ class Repair:
         FROM Complaint
         WHERE Status = 'closed'
         """
-        return db.fetch_all(query)
+        try:
+            return db.fetch_all(query)
+        except Exception:
+            fallback_query = """
+            SELECT complaintID, apartmentID, Initial_Issue AS InitialIssue, Description, reportDate, FinalResolution, Severity
+            FROM Complaint
+            WHERE Status = 'closed'
+            """
+            return db.fetch_all(fallback_query)
 
 
 # -----------------------------
