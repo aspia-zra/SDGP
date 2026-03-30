@@ -1,0 +1,12 @@
+========================================
+   PARAGON APARTMENT MANAGEMENT
+         PAYMENT RECEIPT
+========================================
+Receipt Date : 2026-03-30 09:48
+Invoice ID   : 26
+Tenant Name  : Sara White
+Amount       : £1550.00
+Due Date     : 2026-03-01
+Status       : paid
+========================================
+Thank you for your payment.
