@@ -14,6 +14,7 @@ class UserTbl:
     def _verify_password(password, stored_password):
         if stored_password is None:
             return False, False
+
         if isinstance(stored_password, bytes):
             try:
                 stored_password = stored_password.decode()

@@ -111,4 +111,8 @@ class LoginPage(ctk.CTkFrame):
         if user != None:
             self.login_success_callback(user)
         else:
+<<<<<<< HEAD
             self.error_label.configure(text="Invalid email or password")
+=======
+            self.error_label.configure(text="Invalid email or password")
+>>>>>>> origin/Azra-management-dashboard

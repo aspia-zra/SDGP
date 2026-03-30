@@ -1,0 +1,146 @@
+#Separate python file for logging in and out
+from db import db
+import bcrypt
+from . import user_session
+
+def changeEmail(new_email):
+    conn = db.getconnection()
+    cursor = None
+    if conn is not None:  # Checking if connection is None
+        if conn.is_connected():  # Checking if connection is established
+            try:
+                cursor = conn.cursor()
+                cursor.execute("""SELECT * FROM UserTbl 
+                    WHERE Email = %s AND userID != %s
+                    """, (new_email, user_session.current_user_id))
+                existingemail = cursor.fetchone()
+
+                if not new_email:
+                    return "Must enter an email!"
+
+                if user_session.current_email == new_email:
+                    return "Must enter a new email."
+
+                if existingemail:
+                    return "Email already registered."
+
+                cursor.execute("UPDATE UserTbl SET Email=%s WHERE userID=%s"
+                    ,(new_email, user_session.current_user_id))
+                conn.commit()
+                user_session.current_email = new_email
+                return "Your email has been updated."
+            finally:
+                if cursor is not None:
+                    cursor.close()
+                conn.close()
+        else:
+            print('DB connection error')
+    else:
+        print('DBFunc error')
+
+def changePhone(new_phone):
+    conn = db.getconnection()
+    cursor = None
+    if conn is not None:  # Checking if connection is None
+        if conn.is_connected():  # Checking if connection is established
+            try:
+                cursor = conn.cursor()
+                cursor.execute("""SELECT * FROM UserTbl 
+                            WHERE Phone = %s AND userID != %s""", (new_phone, user_session.current_user_id))
+                existingNumber = cursor.fetchone()
+
+                if not new_phone:
+                    return "Must enter a phone number!"
+
+                if user_session.current_phone == new_phone:
+                    return "Must enter a new phone number."
+
+                if existingNumber: #If someone else is using the same number
+                    return "Number already registered."
+
+                cursor.execute("UPDATE UserTbl SET Phone=%s WHERE userID=%s"
+                    ,(new_phone, user_session.current_user_id))
+                conn.commit()
+                user_session.current_phone = new_phone
+                return "Your phone number has been updated."
+            finally:
+                if cursor is not None:
+                    cursor.close()
+                conn.close()
+        else:
+            print('DB connection error')
+    else:
+        print('DBFunc error')
+
+def _verify_password(password, stored_password):
+        if stored_password is None:
+            return False, False
+
+        # Normalize DB value to text safely.
+        if isinstance(stored_password, bytes):
+            try:
+                stored_password = stored_password.decode()
+            except Exception:
+                return False, False
+        elif not isinstance(stored_password, str):
+            stored_password = str(stored_password)
+
+        # If it looks like a bcrypt hash, verify with bcrypt.
+        if stored_password.startswith("$2a$") or stored_password.startswith("$2b$") or stored_password.startswith("$2y$"):
+            try:
+                return bcrypt.checkpw(password.encode(), stored_password.encode()), False
+            except Exception:
+                return False, False
+
+        # Backward-compatibility for old plaintext rows.
+        return password == stored_password, True
+
+def changePassword(new_password, current_password):
+    conn = db.getconnection()
+    cursor = None
+    try:
+        cursor = conn.cursor()
+        cursor.execute("SELECT Password FROM UserTbl WHERE userID = %s",(user_session.current_user_id,))
+        rows = cursor.fetchone()
+        if rows:
+            rpassword = rows[0]
+            password_correct, was_plaintext = _verify_password(current_password, rpassword)
+
+            if not password_correct:
+                return "Current password incorrect, try again"
+
+            if len(new_password) < 8:
+                return "New password must be atleast 8 characters long"
+
+            if any(char.isdigit() for char in new_password) == False:
+                return "New password must include a number"
+
+            hashednew_password = bcrypt.hashpw(new_password.encode(), bcrypt.gensalt())
+
+            cursor.execute("UPDATE UserTbl SET Password=%s WHERE userID=%s"
+                ,(hashednew_password, user_session.current_user_id))
+            conn.commit()
+
+            cursor.execute("SELECT fullName FROM UserTbl WHERE userID = %s", (user_session.current_user_id,))
+            rows = cursor.fetchone()
+            fullname= rows[0]
+
+            return fullname + "'s password has been updated."
+    finally:
+        if cursor is not None:
+            cursor.close()
+        conn.close()
+
+def changeFontsize(new_fontsize):
+    if not new_fontsize.isdigit():
+        return "Must be a number."
+    if int(new_fontsize)>30:
+        user_session.personal_fontsize = 30
+        return "The maximum font size is 30."
+    elif int(new_fontsize) < 12:
+        user_session.personal_fontsize = 12
+        return "The minimum font size is 12."
+    else:
+        user_session.personal_fontsize = new_fontsize
+        return "Personal font size updated."
+
