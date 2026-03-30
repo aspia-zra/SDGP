@@ -51,6 +51,11 @@ class Repair:
         details = (str(initial_issue or "").strip() or "-")
         return reason, details
 
+    @staticmethod
+    def _is_unknown_column_error(exc):
+        message = str(exc).lower()
+        return "unknown column" in message
+
     def __init__(self, apartmentID, logID=None, userID=None, maintenanceDate=None, timeTaken=None, Cost=None, Notes=None):
         self.logID = logID
         self.apartmentID = apartmentID
@@ -108,15 +113,22 @@ class Repair:
         FROM Complaint
         WHERE Status = 'open'
         """
+        fallback_query = """
+        SELECT complaintID,
+               apartmentID,
+               Description AS InitialIssue,
+               Description,
+               reportDate,
+               Severity
+        FROM Complaint
+        WHERE Status = 'open'
+        """
         try:
             return db.fetch_all(query)
-        except Exception:
-            fallback_query = """
-            SELECT complaintID, apartmentID, Initial_Issue AS InitialIssue, Description, reportDate, Severity
-            FROM Complaint
-            WHERE Status = 'open'
-            """
-            return db.fetch_all(fallback_query)
+        except Exception as exc:
+            if Repair._is_unknown_column_error(exc):
+                return db.fetch_all(fallback_query)
+            raise
 
 
     @staticmethod
@@ -208,7 +220,15 @@ class Repair:
         for r in repairs:
             issue = (r.get("InitialIssue") or "").strip()
             priority = Repair._normalize_priority(r.get("Priority"))
-            worker_label = (r.get("workerName") or "").strip() or r.get("userID") or "-"
+            worker_name = str(r.get("workerName") or "").strip()
+            worker_id = r.get("userID")
+            worker_label = worker_name
+
+            if not worker_label and worker_id is not None:
+                worker_label = f"Worker #{worker_id}"
+
+            if not worker_label:
+                worker_label = "Unassigned"
 
             requests.append({
                 "id": r["logID"],
@@ -291,7 +311,19 @@ class Repair:
             WHERE complaintID = %s
             """
 
-            db.execute(query, (notes, request_id))
+            try:
+                db.execute(query, (notes, request_id))
+            except Exception as exc:
+                if not Repair._is_unknown_column_error(exc):
+                    raise
+
+                fallback_query = """
+                UPDATE Complaint
+                SET Status = 'closed',
+                    reportDate = NOW()
+                WHERE complaintID = %s
+                """
+                db.execute(fallback_query, (request_id,))
 
         elif request_type == "repair":
 

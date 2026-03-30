@@ -3,20 +3,14 @@ import customtkinter as ctk
 from tkinter import messagebox
 from datetime import datetime
 from models.repairs import Repair
-from models import theme
+from . import theme
 from db.db_connect import Database
 from gui.nav import navbar as NavigationBar
-
-
-# Use a light appearance mode for the app
-ctk.set_appearance_mode("light")
-ctk.set_default_color_theme("blue")
-
 
 class RepairsPage(ctk.CTkFrame):
 
     def __init__(self, parent, db=None):
-        super().__init__(parent)
+        super().__init__(parent, fg_color=theme.BACKGROUND)
 
         # allow reusing a shared database connection if passed in
         self.db = db or Database()
@@ -84,69 +78,108 @@ class RepairsPage(ctk.CTkFrame):
 
     def create_widgets(self):
         # Main content container (right side) with vertical scrolling.
-        self.container = ctk.CTkScrollableFrame(self)
+        self.container = ctk.CTkScrollableFrame(
+            self,
+            fg_color=theme.BACKGROUND,
+            scrollbar_button_color=theme.PRIMARY,
+            scrollbar_button_hover_color=theme.PRIMARY_DARK,
+        )
         self.container.grid(row=0, column=1, sticky="nsew", padx=40, pady=20)
         self.container.grid_columnconfigure(0, weight=1)
 
         title = ctk.CTkLabel(
             self.container,
             text="Repair Booking",
-            font=theme.TITLE_FONT
+            font=theme.TITLE_FONT,
+            text_color=theme.PRIMARY,
         )
         title.grid(row=0, column=0, pady=30)
 
-        form = ctk.CTkFrame(self.container)
+        form = ctk.CTkFrame(self.container, fg_color=theme.SURFACE, corner_radius=12)
         form.grid(row=1, column=0, padx=40, pady=40, sticky="nsew")
 
         form.grid_columnconfigure(1, weight=1)
 
         # form components
         # issue
-        ctk.CTkLabel(form, text="Repair Reason", font=theme.BODY_FONT).grid(
+        ctk.CTkLabel(form, text="Repair Reason", font=theme.BODY_FONT, text_color=theme.TEXT_PRIMARY).grid(
             row=0, column=0, padx=20, pady=15, sticky="e"
         )
 
-        self.issue_entry = ctk.CTkEntry(form, height=40)
+        self.issue_entry = ctk.CTkEntry(
+            form,
+            height=40,
+            fg_color=theme.BACKGROUND,
+            text_color=theme.TEXT_PRIMARY,
+            placeholder_text_color=theme.TEXT_SECONDARY,
+            border_color=theme.SECONDARY,
+        )
         self.issue_entry.grid(row=0, column=1, padx=20, pady=15, sticky="ew")
 
         # repair details
-        ctk.CTkLabel(form, text="Repair Details", font=theme.BODY_FONT).grid(
+        ctk.CTkLabel(form, text="Repair Details", font=theme.BODY_FONT, text_color=theme.TEXT_PRIMARY).grid(
             row=1, column=0, padx=20, pady=15, sticky="ne"
         )
 
-        self.details_entry = ctk.CTkTextbox(form, height=120)
+        self.details_entry = ctk.CTkTextbox(
+            form,
+            height=120,
+            fg_color=theme.BACKGROUND,
+            text_color=theme.TEXT_PRIMARY,
+            border_color=theme.SECONDARY,
+            border_width=1,
+        )
         self.details_entry.grid(row=1, column=1, padx=20, pady=15, sticky="ew")
 
         # apartment
-        ctk.CTkLabel(form, text="Apartment Number", font=theme.BODY_FONT).grid(
+        ctk.CTkLabel(form, text="Apartment Number", font=theme.BODY_FONT, text_color=theme.TEXT_PRIMARY).grid(
             row=2, column=0, padx=20, pady=15, sticky="e"
         )
 
-        self.apartment_entry = ctk.CTkEntry(form, height=40)
+        self.apartment_entry = ctk.CTkEntry(
+            form,
+            height=40,
+            fg_color=theme.BACKGROUND,
+            text_color=theme.TEXT_PRIMARY,
+            placeholder_text_color=theme.TEXT_SECONDARY,
+            border_color=theme.SECONDARY,
+        )
         self.apartment_entry.grid(row=2, column=1, padx=20, pady=15, sticky="ew")
 
         # date
-        ctk.CTkLabel(form, text="Repair Date (DD-MM-YY)", font=theme.BODY_FONT).grid(
+        ctk.CTkLabel(form, text="Repair Date (DD-MM-YY)", font=theme.BODY_FONT, text_color=theme.TEXT_PRIMARY).grid(
             row=3, column=0, padx=20, pady=15, sticky="e"
         )
 
-        self.date_entry = ctk.CTkEntry(form, height=40)
+        self.date_entry = ctk.CTkEntry(
+            form,
+            height=40,
+            fg_color=theme.BACKGROUND,
+            text_color=theme.TEXT_PRIMARY,
+            placeholder_text_color=theme.TEXT_SECONDARY,
+            border_color=theme.SECONDARY,
+        )
         self.date_entry.grid(row=3, column=1, padx=20, pady=15, sticky="ew")
 
         # priority
-        ctk.CTkLabel(form, text="Priority", font=theme.BODY_FONT).grid(
+        ctk.CTkLabel(form, text="Priority", font=theme.BODY_FONT, text_color=theme.TEXT_PRIMARY).grid(
             row=4, column=0, padx=20, pady=15, sticky="e"
         )
 
         self.priority_box = ctk.CTkSegmentedButton(
             form,
-            values=["1", "2", "3"]
+            values=["1", "2", "3"],
+            selected_color=theme.PRIMARY,
+            selected_hover_color=theme.PRIMARY_DARK,
+            unselected_color=theme.BACKGROUND,
+            unselected_hover_color=theme.SECONDARY,
+            text_color=theme.TEXT_PRIMARY,
         )
         self.priority_box.grid(row=4, column=1, padx=20, pady=15, sticky="ew")
         self.priority_box.set("2")
 
         # util
-        button_frame = ctk.CTkFrame(self.container)
+        button_frame = ctk.CTkFrame(self.container, fg_color="transparent")
         button_frame.grid(row=2, column=0, pady=20)
 
         ctk.CTkButton(

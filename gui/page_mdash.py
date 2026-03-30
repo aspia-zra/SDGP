@@ -2,14 +2,17 @@ import customtkinter as ctk
 from tkinter import messagebox
 from models.repairs import Repair
 from models import theme
+from db.db_connect import Database
 from gui.nav import navbar as NavigationBar
 
 
 class DashboardPage(ctk.CTkFrame):
 
     def __init__(self, parent, db=None):
-        super().__init__(parent)
-        self.db = db
+        super().__init__(parent, fg_color=theme.BACKGROUND)
+        # Keep behavior consistent with other maintenance pages: create a
+        # connection when the caller does not inject one.
+        self.db = db or Database()
         controller = getattr(self.winfo_toplevel(), "app_controller", self.winfo_toplevel())
         self._ensure_scaling_safe_root()
 
@@ -55,7 +58,7 @@ class DashboardPage(ctk.CTkFrame):
         if self.main_container is not None:
             self.main_container.destroy()
 
-        self.main_container = ctk.CTkFrame(self)
+        self.main_container = ctk.CTkFrame(self, fg_color=theme.BACKGROUND)
         self.main_container.grid(row=0, column=1, sticky="nsew", padx=40, pady=20)
         self.main_container.grid_rowconfigure(1, weight=1)
         self.main_container.grid_columnconfigure(0, weight=1)
@@ -79,7 +82,7 @@ class DashboardPage(ctk.CTkFrame):
 
         ctk.CTkLabel(open_frame, text="Open Requests", font=theme.HEADING_FONT).grid(row=0, column=0, pady=(12, 8))
 
-        open_header_frame = ctk.CTkFrame(open_frame, fg_color="transparent")
+        open_header_frame = ctk.CTkFrame(open_frame, fg_color=theme.SURFACE)
         open_header_frame.grid(row=1, column=0, sticky="ew", padx=10)
         open_columns = [
             ("Type", 90, "center"),
@@ -95,7 +98,7 @@ class DashboardPage(ctk.CTkFrame):
         for i, (header, _, anchor) in enumerate(open_columns):
             self._table_header_label(open_header_frame, header, 0, i, anchor=anchor)
 
-        open_scroll = ctk.CTkScrollableFrame(open_frame, fg_color="transparent", height=240)
+        open_scroll = ctk.CTkScrollableFrame(open_frame, fg_color=theme.SURFACE, height=240)
         open_scroll.grid(row=2, column=0, sticky="nsew", padx=10, pady=(4, 10))
         self._configure_table_columns(open_scroll, open_columns)
 
@@ -138,7 +141,7 @@ class DashboardPage(ctk.CTkFrame):
 
         ctk.CTkLabel(completed_frame, text="Recently Completed", font=theme.HEADING_FONT).grid(row=0, column=0, pady=(12, 8))
 
-        completed_header_frame = ctk.CTkFrame(completed_frame, fg_color="transparent")
+        completed_header_frame = ctk.CTkFrame(completed_frame, fg_color=theme.SURFACE)
         completed_header_frame.grid(row=1, column=0, sticky="ew", padx=10)
         completed_columns = [
             ("Type", 90, "center"),
@@ -151,7 +154,7 @@ class DashboardPage(ctk.CTkFrame):
         for i, (header, _, anchor) in enumerate(completed_columns):
             self._table_header_label(completed_header_frame, header, 0, i, anchor=anchor)
 
-        completed_scroll = ctk.CTkScrollableFrame(completed_frame, fg_color="transparent", height=240)
+        completed_scroll = ctk.CTkScrollableFrame(completed_frame, fg_color=theme.SURFACE, height=240)
         completed_scroll.grid(row=2, column=0, sticky="nsew", padx=10, pady=(4, 10))
         self._configure_table_columns(completed_scroll, completed_columns)
 
@@ -176,6 +179,7 @@ class DashboardPage(ctk.CTkFrame):
         dialog = ctk.CTkToplevel(self)
         dialog.title(f"{job['type'].title()} Details")
         dialog.geometry("460x360")
+        dialog.configure(fg_color=theme.SURFACE)
         dialog.grab_set()
 
         details = [
@@ -217,6 +221,7 @@ class DashboardPage(ctk.CTkFrame):
         dialog = ctk.CTkToplevel(self)
         dialog.title("Complaint Details")
         dialog.geometry("460x320")
+        dialog.configure(fg_color=theme.SURFACE)
         dialog.grab_set()
 
         details = [
@@ -248,6 +253,7 @@ class DashboardPage(ctk.CTkFrame):
         dialog = ctk.CTkToplevel(self)
         dialog.title(f"Complete {request['type']} #{request['id']}")
         dialog.geometry("420x340")
+        dialog.configure(fg_color=theme.SURFACE)
         dialog.grab_set()
 
         ctk.CTkLabel(dialog, text="Time Taken").pack(pady=(20, 5))
@@ -327,3 +333,4 @@ class DashboardPage(ctk.CTkFrame):
             text_color=theme.SURFACE,
             command=submit_completion,
         ).pack(pady=15)
+
