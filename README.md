@@ -1,0 +1,1 @@
+change to ctk, change nav bar, make sure repairs works, see if it works. add files to github manually
