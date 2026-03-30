@@ -4,7 +4,7 @@ from mysql.connector import errorcode
 hostname = "localhost"
 db = "sdgpdump"
 username = "root"
-passwd = "Mathsmasters1!"
+passwd = "password"
 
 
 def get_connection():
