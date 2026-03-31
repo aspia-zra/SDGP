@@ -1,3 +1,4 @@
-hi. ive renamed the KHANHAZRAIMAAN branch to this one. this is the merge-complete branch, our default branch when people look at our repo. ive left the other branches for now for documentation with how we initially worked in branches as a group if it helps with report screenshots. 
+# Systems Development University Group Project
+## This project uses Tkinter and Python to develop a tenant management web application. 
 
-thanks - azra
+A five person project.
